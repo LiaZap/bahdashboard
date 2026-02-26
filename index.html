@@ -2132,7 +2132,7 @@
             <div class="live-dot"></div>
             Ao vivo
           </div>
-          <div class="date-label">25 fev 2026</div>
+          <div class="date-label" id="dateLabelLive"></div>
           <div class="filter-group">
             <button class="filter-btn active" onclick="setFilter(this)">
               Hoje
@@ -2189,7 +2189,7 @@
           </svg>
         </button>
 
-        <div class="avatar">PA</div>
+        <div class="avatar">DO</div>
       </div>
     </header>
 
@@ -3966,7 +3966,7 @@
         let baseVolume = 280; // Base daily chats
         if (days === 1) baseVolume = 13; // hourly base
         
-        const now = new Date("2026-02-25T12:00:00");
+        const now = new Date();
         let totalNovos = 0;
         let totalRes = 0;
         let totalEsc = 0;
@@ -5499,7 +5499,7 @@
 
       function genDays(n) {
         const arr = [];
-        const d = new Date("2026-02-25");
+        const d = new Date();
         for (let i = n - 1; i >= 0; i--) {
           const x = new Date(d);
           x.setDate(d.getDate() - i);
@@ -5969,6 +5969,12 @@
           dismissSplash();
         }
 
+        // Set dynamic date label
+        const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+        const hoje = new Date();
+        document.getElementById('dateLabelLive').textContent =
+          hoje.getDate() + ' ' + meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+
         updateDashboardCharts('Hoje');
         renderTickets();
         renderConversas();
@@ -5990,9 +5996,9 @@
 
     <!-- TOAST -->
     <div class="toast" id="toastNotif">
-      <div class="toast-avatar">PA</div>
+      <div class="toast-avatar">DO</div>
       <div class="toast-body">
-        <div class="toast-title">Bem-vindo de volta, Paulo! 👋</div>
+        <div class="toast-title">Bem-vindo de volta, Douglas! 👋</div>
         <div class="toast-sub">Tudo pronto — 312 atendimentos registrados hoje.</div>
       </div>
       <button class="toast-close" onclick="closeToast()">×</button>
