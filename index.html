@@ -1,0 +1,6002 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BahTech · Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e0f14'/%3E%3Cpath d='M19 3L7 18h8.5l-1.5 11L26 14h-8.5L19 3Z' fill='%23fadb14'/%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: #0e0f14;
+        --surface: #16181f;
+        --surface2: #1e2029;
+        --border: #272a36;
+        --brand-yellow: #fadb14;
+        --primary: #7c6af7;
+        --primary-light: #a89bf9;
+        --primary-glow: rgba(124, 106, 247, 0.14);
+        --success: #22d48c;
+        --warning: #f59e0b;
+        --danger: #f43f5e;
+        --info: #38bdf8;
+        --text: #e4e7f0;
+        --text-muted: #7a8394;
+        --radius: 12px;
+        --radius-sm: 8px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        min-height: 100vh;
+      }
+
+      /* ── TOPBAR ── */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(14, 15, 20, 0.88);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 32px;
+        height: 58px;
+        gap: 28px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        text-decoration: none;
+      }
+      .logo-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-icon svg {
+        display: block;
+      }
+      .logo-text {
+        font-size: 18px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.04em;
+        text-transform: lowercase;
+      }
+      .logo-text span {
+        color: var(--brand-yellow);
+        font-style: italic;
+        position: relative;
+      }
+      .logo-text span::after {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        width: 15px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--brand-yellow));
+        opacity: 0.6;
+        transform: translateY(-50%);
+      }
+
+      .topnav {
+        display: flex;
+        gap: 4px;
+        margin-left: 8px;
+        align-items: center;
+      }
+      .topnav a {
+        position: relative;
+        padding: 6px 13px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-decoration: none;
+        cursor: pointer;
+        transform-origin: center bottom;
+        transition:
+          transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+          color 0.15s,
+          background 0.15s;
+        will-change: transform;
+      }
+      .topnav a:hover {
+        color: var(--text);
+        background: var(--surface2);
+      }
+      .topnav a.active {
+        color: var(--text);
+        background: var(--surface2);
+      }
+
+      /* dock label tooltip */
+      .dock-label {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        background: #060010;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #fff;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.12s;
+      }
+      .topnav a:hover .dock-label {
+        opacity: 1;
+      }
+
+      .topbar-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .date-label {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .filter-group {
+        display: flex;
+        gap: 2px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 3px;
+      }
+      .filter-btn {
+        padding: 4px 11px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .filter-btn:hover {
+        color: var(--text);
+      }
+      .filter-btn.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+      .avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c6af7, #38bdf8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .live-pill {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--success);
+        background: rgba(34, 212, 140, 0.1);
+        border: 1px solid rgba(34, 212, 140, 0.2);
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--success);
+        position: relative;
+      }
+      .live-dot::after {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: var(--success);
+        opacity: 0.4;
+        animation: live-pulse 2s infinite;
+      }
+      @keyframes live-pulse {
+        0% { transform: scale(1); opacity: 0.4; }
+        70% { transform: scale(3); opacity: 0; }
+        100% { transform: scale(1); opacity: 0; }
+      }
+
+      /* ── SKELETON LOADING ── */
+      .shimmer {
+        background: linear-gradient(
+          90deg,
+          var(--surface2) 25%,
+          var(--border) 50%,
+          var(--surface2) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+
+      .skeleton-val {
+        height: 28px;
+        width: 80%;
+        border-radius: 4px;
+        display: none;
+      }
+      .skeleton-chart {
+        position: absolute;
+        inset: 0;
+        border-radius: 8px;
+        display: none;
+        z-index: 5;
+      }
+
+      .is-loading .metric-val,
+      .is-loading canvas {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .is-loading .skeleton-val,
+      .is-loading .skeleton-chart {
+        display: block;
+      }
+
+
+      /* ── PAGE WRAPPER ── */
+      .page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 28px 32px 56px;
+      }
+
+      /* ── PAGE TITLE ── */
+      .page-title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+      .page-title h1 {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .page-title p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      /* ── SECTION ── */
+      .section-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .section-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* ── GRIDS ── */
+      .g4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        align-items: start;
+      }
+      .g2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        align-items: start;
+      }
+      .g3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+      }
+      .g-chart {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 12px;
+      }
+      .charts-col {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .g-bottom {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 12px;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+      }
+      .card-sm {
+        padding: 16px 18px;
+      }
+
+      /* ── METRIC CARD ── */
+      .metric {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .metric-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .metric-label {
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+      .metric-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .ic-purple {
+        background: var(--primary-glow);
+        color: var(--primary);
+      }
+      .ic-red {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+      .ic-orange {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .ic-green {
+        background: rgba(34, 212, 140, 0.12);
+        color: var(--success);
+      }
+      .ic-blue {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--info);
+      }
+      .ic-teal {
+        background: rgba(20, 184, 166, 0.12);
+        color: #14b8a6;
+      }
+      .ic-yellow {
+        background: rgba(234, 179, 8, 0.12);
+        color: #ca8a04;
+      }
+      .metric-icon svg {
+        stroke: currentColor;
+      }
+
+      .metric-val {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+      .cv-purple {
+        color: var(--primary-light);
+      }
+      .cv-red {
+        color: var(--danger);
+      }
+      .cv-orange {
+        color: var(--warning);
+      }
+      .cv-green {
+        color: var(--success);
+      }
+      .cv-blue {
+        color: var(--info);
+      }
+      .cv-teal {
+        color: #14b8a6;
+      }
+      .cv-default {
+        color: var(--text);
+      }
+
+      .metric-foot {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge {
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 20px;
+      }
+      .b-up {
+        background: rgba(34, 212, 140, 0.12);
+        color: var(--success);
+      }
+      .b-down {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+      .b-neu {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--info);
+      }
+      .b-warn {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .metric-foot-text {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      /* ── DIVIDER ── */
+      .card-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 14px -20px;
+      }
+
+      /* ── CHART CARD ── */
+      .chart-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .chart-title {
+        font-size: 13.5px;
+        font-weight: 600;
+      }
+      .chart-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .chart-legend {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .leg-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+      }
+      .chart-wrap {
+        position: relative;
+        min-height: 175px;
+      }
+
+      /* ── TICKETS ── */
+      .ticket-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        justify-content: space-between;
+      }
+      .ticket-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 11px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: border-color 0.15s;
+      }
+      .ticket-row:hover {
+        border-color: rgba(124, 106, 247, 0.4);
+      }
+      .t-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .t-name {
+        font-size: 12px;
+        font-weight: 500;
+        flex: 1;
+      }
+      .t-bar-wrap {
+        width: 52px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .t-bar {
+        height: 100%;
+        border-radius: 2px;
+      }
+      .t-count {
+        font-size: 12px;
+        font-weight: 700;
+        width: 28px;
+        text-align: right;
+      }
+      .sev {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .sev-bug {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+      .sev-high {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .sev-med {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--info);
+      }
+      .sev-low {
+        background: rgba(34, 212, 140, 0.12);
+        color: var(--success);
+      }
+
+      /* ── TABLE ── */
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      th {
+        padding: 7px 10px;
+        text-align: left;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 9px 10px;
+        border-bottom: 1px solid rgba(39, 42, 54, 0.6);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(124, 106, 247, 0.03);
+      }
+      .status-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 600;
+      }
+      .s-open {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--info);
+      }
+      .s-closed {
+        background: rgba(34, 212, 140, 0.12);
+        color: var(--success);
+      }
+      .s-human {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .s-pending {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+
+      /* ── DONUT CENTER ── */
+      .donut-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+      }
+      .dc-val {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .dc-lbl {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      /* ── STATUS COUNTERS ── */
+      .status-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .stat-box {
+        flex: 1;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+      }
+      .stat-box-val {
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .stat-box-lbl {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 1px;
+      }
+
+      /* ── PEAK BARS ── */
+      .peak-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: space-between;
+      }
+      .peak-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .peak-h {
+        font-size: 11px;
+        color: var(--text-muted);
+        width: 42px;
+        flex-shrink: 0;
+      }
+      .peak-bar-wrap {
+        flex: 1;
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .peak-bar {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary),
+          var(--primary-light)
+        );
+      }
+      .peak-v {
+        font-size: 11px;
+        font-weight: 600;
+        width: 24px;
+        text-align: right;
+      }
+
+      /* ── VIEW ALL ── */
+      .link-sm {
+        font-size: 11.5px;
+        color: var(--primary-light);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        text-decoration: none;
+      }
+      .link-sm:hover {
+        text-decoration: underline;
+      }
+
+      /* ── CUSTOM TOOLTIP ── */
+      #chartjs-tooltip {
+        opacity: 0;
+        position: absolute;
+        background: rgba(22, 24, 31, 0.95);
+        color: white;
+        border-radius: 8px;
+        padding: 10px 14px;
+        pointer-events: none;
+        transition: all 0.2s ease;
+        transform: translate(-50%, 0);
+        z-index: 100;
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        min-width: 140px;
+      }
+      .tt-title {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      .tt-body {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .tt-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .tt-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      /* ── PAGE SWITCHING ── */
+      .page-view {
+        display: none;
+      }
+      .page-view.active {
+        display: block;
+      }
+
+      /* ── CONVERSAS PAGE ── */
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .search-input-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+      }
+      .search-input-wrap svg {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+      }
+      .search-input {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px 8px 34px;
+        font-size: 13px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .search-input::placeholder {
+        color: var(--text-muted);
+      }
+      .search-input:focus {
+        border-color: var(--primary);
+      }
+
+      .filter-tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 3px;
+      }
+      .ftab {
+        padding: 5px 12px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .ftab:hover {
+        color: var(--text);
+      }
+      .ftab.active {
+        background: var(--surface);
+        color: var(--text);
+      }
+      .ftab-count {
+        background: var(--border);
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 10px;
+      }
+      .ftab.active .ftab-count {
+        background: var(--primary-glow);
+        color: var(--primary-light);
+      }
+
+      .select-filter {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 7px 10px;
+        font-size: 12px;
+        color: var(--text-muted);
+        outline: none;
+        cursor: pointer;
+      }
+      .select-filter:focus {
+        border-color: var(--primary);
+      }
+
+      /* Conversation table */
+      .conv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      .conv-table th {
+        padding: 9px 12px;
+        text-align: left;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      .conv-table td {
+        padding: 0;
+        border-bottom: 1px solid rgba(39, 42, 54, 0.6);
+      }
+      .conv-row-main {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 10px 12px;
+        cursor: pointer;
+        gap: 0;
+        transition: background 0.12s;
+      }
+      .conv-row-main:hover {
+        background: rgba(124, 106, 247, 0.04);
+      }
+      .conv-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .conv-expand-icon {
+        font-size: 10px;
+        color: var(--text-muted);
+        transition: transform 0.2s;
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+      .conv-row.expanded .conv-expand-icon {
+        transform: rotate(90deg);
+      }
+
+      /* Chat history drawer */
+      .conv-history {
+        display: none;
+        background: var(--surface2);
+        border-top: 1px solid var(--border);
+        padding: 16px 20px;
+      }
+      .conv-row.expanded .conv-history {
+        display: block;
+      }
+      .history-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 12px;
+      }
+      .chat-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 680px;
+      }
+      .msg {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      .msg.bot {
+        flex-direction: row;
+      }
+      .msg.user {
+        flex-direction: row-reverse;
+      }
+      .msg-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      .msg.bot .msg-avatar {
+        background: var(--primary-glow);
+        color: var(--primary-light);
+      }
+      .msg.user .msg-avatar {
+        background: rgba(34, 212, 140, 0.15);
+        color: var(--success);
+      }
+      .msg-bubble {
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 12.5px;
+        line-height: 1.45;
+        max-width: 480px;
+      }
+      .msg.bot .msg-bubble {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 3px;
+      }
+      .msg.user .msg-bubble {
+        background: var(--primary-glow);
+        border: 1px solid rgba(124, 106, 247, 0.25);
+        border-bottom-right-radius: 3px;
+        text-align: right;
+      }
+      .msg-time {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 3px;
+      }
+
+      /* Pagination */
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0 0;
+        margin-top: 4px;
+      }
+      .pag-info {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .pag-btns {
+        display: flex;
+        gap: 4px;
+      }
+      .pag-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .pag-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary-light);
+      }
+      .pag-btn.active {
+        background: var(--primary-glow);
+        border-color: var(--primary);
+        color: var(--primary-light);
+        font-weight: 700;
+      }
+      .pag-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      /* ── TICKETS / KANBAN ── */
+      .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        align-items: start;
+      }
+      .kanban-col {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .kanban-col-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .kanban-col-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .kanban-col-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .kanban-col-count {
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--border);
+        color: var(--text-muted);
+        padding: 1px 7px;
+        border-radius: 10px;
+      }
+      .kanban-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        min-height: 80px;
+      }
+      .ticket-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px 13px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      .ticket-card:hover {
+        border-color: rgba(124, 106, 247, 0.4);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+      }
+      .tc-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 7px;
+      }
+      .tc-id {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+      .tc-prio {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .prio-high {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+      .prio-medium {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .prio-low {
+        background: rgba(34, 212, 140, 0.12);
+        color: var(--success);
+      }
+      .tc-title {
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.35;
+        margin-bottom: 8px;
+      }
+      .tc-tags {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .tc-tag {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .tag-bug {
+        background: rgba(244, 63, 94, 0.12);
+        color: var(--danger);
+      }
+      .tag-feat {
+        background: var(--primary-glow);
+        color: var(--primary-light);
+      }
+      .tc-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tc-convs {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .tc-assignee {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        color: #fff;
+      }
+      .tc-date {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      /* Ticket detail modal */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        width: 560px;
+        max-width: 94vw;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 24px 26px;
+        position: relative;
+      }
+      .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+      }
+      .modal-close:hover {
+        color: var(--text);
+        border-color: var(--primary);
+      }
+      .modal-id {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        line-height: 1.3;
+      }
+      .modal-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .modal-section-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 16px 0 8px;
+      }
+      .modal-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-muted);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+      }
+      .modal-convs-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .modal-conv-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      .btn-primary {
+        flex: 1;
+        padding: 9px;
+        border-radius: var(--radius-sm);
+        background: var(--primary);
+        border: none;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+      .btn-primary:hover {
+        opacity: 0.85;
+      }
+      .btn-ghost {
+        padding: 9px 16px;
+        border-radius: var(--radius-sm);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+        border-color: var(--primary);
+      }
+
+      /* ── USUÁRIOS ── */
+      .user-avatar-lg {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .plan-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 600;
+      }
+      .plan-pro {
+        background: var(--primary-glow);
+        color: var(--primary-light);
+      }
+      .plan-basic {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--info);
+      }
+      .plan-trial {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+      }
+      .plan-free {
+        background: var(--border);
+        color: var(--text-muted);
+      }
+      .user-status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      /* ── RELATÓRIOS ── */
+      .rel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      .rel-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      .kpi-inline {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+      }
+      .kpi-inline-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .kpi-inline-icon svg {
+        stroke: currentColor;
+      }
+      .kpi-inline-val {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .kpi-inline-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .period-tabs {
+        display: flex;
+        gap: 3px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 3px;
+      }
+      .ptab {
+        padding: 5px 14px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .ptab:hover {
+        color: var(--text);
+      }
+      .ptab.active {
+        background: var(--surface);
+        color: var(--text);
+      }
+      .agent-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(39, 42, 54, 0.6);
+      }
+      .agent-row:last-child {
+        border-bottom: none;
+      }
+      .agent-bar-wrap {
+        flex: 1;
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .agent-bar {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary),
+          var(--primary-light)
+        );
+      }
+
+      /* scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      /* ── 1280px: reduce padding ── */
+      @media (max-width: 1280px) {
+        .page {
+          padding: 24px 24px 48px;
+        }
+        .topbar {
+          padding: 0 24px;
+        }
+      }
+
+      /* ── 1100px: 2-col KPIs, stack chart+tickets ── */
+      @media (max-width: 1100px) {
+        .page {
+          padding: 20px 20px 40px;
+        }
+        .g4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .g-chart {
+          grid-template-columns: 1fr;
+        }
+        .charts-col {
+          flex-direction: column;
+        }
+      }
+
+      /* ── 900px: stack g3 e g-bottom, esconder data ── */
+      @media (max-width: 900px) {
+        .topbar {
+          padding: 0 16px;
+          gap: 14px;
+        }
+        .page {
+          padding: 18px 16px 36px;
+        }
+        .g3 {
+          grid-template-columns: 1fr;
+        }
+        .g-bottom {
+          grid-template-columns: 1fr;
+        }
+        .date-label {
+          display: none;
+        }
+        .g3 > [style*="grid-column"] {
+          grid-column: auto !important;
+        }
+      }
+
+      /* ── 768px: hide nav, g4 2-col, resto 1-col ── */
+      @media (max-width: 768px) {
+        .topbar {
+          padding: 0 12px;
+          gap: 10px;
+        }
+        .page {
+          padding: 14px 12px 28px;
+        }
+        .topnav {
+          display: none;
+        }
+        .g4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .g2,
+        .g3,
+        .g-bottom,
+        .g-chart {
+          grid-template-columns: 1fr;
+        }
+        .live-pill {
+          display: none;
+        }
+        .filter-group {
+          display: none;
+        }
+        .g3 > [style*="grid-column"] {
+          grid-column: auto !important;
+        }
+        .mobile-nav { display: flex; }
+        .page { padding-bottom: 76px; }
+      }
+
+      /* ── 480px: mobile compacto ── */
+      @media (max-width: 480px) {
+        .topbar {
+          height: 50px;
+          padding: 0 10px;
+        }
+        .page {
+          padding: 12px 10px 76px;
+        }
+        .logo-text {
+          display: none;
+        }
+        .logo img {
+          height: 28px !important;
+        }
+        #topbar-dash-only {
+          display: none !important;
+        }
+        .notif-dropdown {
+          width: calc(100vw - 24px);
+          right: -44px;
+        }
+        .toast {
+          bottom: 72px;
+          left: 12px;
+          right: 12px;
+          max-width: none;
+        }
+        .login-card {
+          padding: 24px 18px;
+        }
+      }
+
+      /* ── SPLASH SCREEN ── */
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.65s ease;
+      }
+      #splash-screen.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #splash-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* ── MOBILE BOTTOM NAV ── */
+      .mobile-nav {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(22, 24, 31, 0.96);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid var(--border);
+        height: 60px;
+        flex-direction: row;
+        align-items: stretch;
+      }
+      .mobile-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 9px;
+        font-family: inherit;
+        font-weight: 500;
+        padding: 6px 2px;
+        transition: color 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mobile-nav-item svg {
+        width: 20px; height: 20px;
+        stroke: currentColor; fill: none;
+        stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+        transition: stroke 0.15s;
+      }
+      .mobile-nav-item.active { color: var(--primary); }
+
+      /* ── LOGIN SCREEN ── */
+      #login-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+      #login-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .login-wrap {
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+      }
+      .login-logo {
+        height: 36px;
+      }
+      .login-card {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      }
+      .login-header {
+        text-align: center;
+      }
+      .login-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
+        letter-spacing: -0.02em;
+      }
+      .login-sub {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .btn-google {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .btn-google:hover {
+        background: #272a36;
+        border-color: #3a3d4d;
+      }
+      .login-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 12px;
+      }
+      .login-divider::before,
+      .login-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .login-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .login-field label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        letter-spacing: 0.02em;
+      }
+      .login-input-wrap {
+        position: relative;
+      }
+      .login-input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        box-sizing: border-box;
+      }
+      .login-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+      }
+      .login-input.has-toggle {
+        padding-right: 42px;
+      }
+      .pwd-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s;
+      }
+      .pwd-toggle:hover { color: var(--text); }
+      .login-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .login-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--text-muted);
+        user-select: none;
+      }
+      .login-check input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        accent-color: var(--primary);
+        cursor: pointer;
+      }
+      .btn-login {
+        width: 100%;
+        padding: 11px 16px;
+        border-radius: var(--radius-sm);
+        border: none;
+        background: var(--primary);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        letter-spacing: -0.01em;
+        transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+        box-shadow: 0 4px 14px rgba(124, 106, 247, 0.35);
+      }
+      .btn-login:hover {
+        background: #6b5ce7;
+        box-shadow: 0 6px 20px rgba(124, 106, 247, 0.45);
+      }
+      .btn-login:active { transform: scale(0.98); }
+      .btn-login:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .login-error {
+        background: rgba(244,63,94,0.1);
+        border: 1px solid rgba(244,63,94,0.25);
+        border-radius: var(--radius-sm);
+        padding: 9px 12px;
+        font-size: 12px;
+        color: var(--danger);
+        display: none;
+      }
+      .login-error.show { display: block; }
+      .login-footer {
+        font-size: 11px;
+        color: #4a5060;
+        text-align: center;
+      }
+
+      /* ── TOAST ── */
+      .toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 10000;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--success);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+        transform: translateY(80px);
+        opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+        max-width: 300px;
+        pointer-events: none;
+      }
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .toast-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c6af7, #38bdf8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .toast-body { flex: 1; min-width: 0; }
+      .toast-title { font-size: 13px; font-weight: 600; color: var(--text); }
+      .toast-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+      .toast-close {
+        background: none; border: none; cursor: pointer;
+        color: var(--text-muted); padding: 0; font-size: 18px; line-height: 1;
+        flex-shrink: 0; transition: color 0.15s;
+      }
+      .toast-close:hover { color: var(--text); }
+
+      /* ── NOTIFICATION BELL ── */
+      .notif-wrap { position: relative; }
+      .notif-btn {
+        position: relative;
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s;
+      }
+      .notif-btn:hover { background: #272a36; color: var(--text); }
+      .notif-badge {
+        position: absolute;
+        top: -5px; right: -5px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 9px; font-weight: 700;
+        width: 17px; height: 17px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--bg);
+        line-height: 1;
+        transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+      }
+      .notif-badge.gone { transform: scale(0); }
+      .notif-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 308px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+        overflow: hidden;
+        opacity: 0; visibility: hidden;
+        transform: translateY(-8px) scale(0.97);
+        transform-origin: top right;
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+        z-index: 200;
+      }
+      .notif-dropdown.open {
+        opacity: 1; visibility: visible;
+        transform: translateY(0) scale(1);
+      }
+      .notif-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px; font-weight: 600; color: var(--text);
+      }
+      .notif-clear {
+        font-size: 11px; font-weight: 400; color: var(--primary);
+        background: none; border: none; cursor: pointer; padding: 0;
+      }
+      .notif-item {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 11px 14px;
+        border-bottom: 1px solid rgba(39,42,54,0.7);
+        cursor: pointer; transition: background 0.12s;
+      }
+      .notif-item:last-child { border-bottom: none; }
+      .notif-item:hover { background: var(--surface2); }
+      .notif-item.read { opacity: 0.45; }
+      .notif-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+      }
+      .notif-msg { font-size: 12px; color: var(--text); line-height: 1.4; }
+      .notif-time { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+      /* ── LOGOUT BUTTON ── */
+      .logout-btn {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface2);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .logout-btn:hover {
+        background: rgba(244,63,94,0.1);
+        border-color: rgba(244,63,94,0.3);
+        color: var(--danger);
+      }
+
+      /* ── KPI LIVE PULSE ── */
+      @keyframes kpi-pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(34,212,140,0.35); }
+        60%  { box-shadow: 0 0 0 7px rgba(34,212,140,0); }
+        100% { box-shadow: 0 0 0 0 rgba(34,212,140,0); }
+      }
+      .kpi-updated { animation: kpi-pulse 0.9s ease; }
+    </style>
+  </head>
+  <body>
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+      <video id="splash-video" muted playsinline preload="auto" src="bahtech_intro_animation.mp4"></video>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+      <div class="login-wrap">
+        <img src="bahtech_logotipo_negativo.png" alt="BahTech" class="login-logo">
+        <div class="login-card">
+          <div class="login-header">
+            <div class="login-title">Bem-vindo de volta</div>
+            <div class="login-sub">Faça login na sua conta BahTech</div>
+          </div>
+
+          <button class="btn-google" onclick="handleGoogleLogin()">
+            <svg width="17" height="17" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Entrar com Google
+          </button>
+
+          <div class="login-divider">ou continue com e-mail</div>
+
+          <div class="login-field">
+            <label for="loginEmail">E-mail</label>
+            <div class="login-input-wrap">
+              <input
+                class="login-input"
+                id="loginEmail"
+                type="email"
+                placeholder="seu@email.com"
+                autocomplete="email"
+                onkeydown="if(event.key==='Enter')document.getElementById('loginPwd').focus()"
+              >
+            </div>
+          </div>
+
+          <div class="login-field">
+            <label for="loginPwd">Senha</label>
+            <div class="login-input-wrap">
+              <input
+                class="login-input has-toggle"
+                id="loginPwd"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                onkeydown="if(event.key==='Enter')submitLogin()"
+              >
+              <button class="pwd-toggle" id="pwdToggleBtn" onclick="togglePwd()" type="button" tabindex="-1">
+                <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-row">
+            <label class="login-check">
+              <input type="checkbox" id="loginRemember">
+              Lembrar de mim
+            </label>
+          </div>
+
+          <div class="login-error" id="loginError">
+            E-mail ou senha incorretos. Tente novamente.
+          </div>
+
+          <button class="btn-login" id="loginBtn" onclick="submitLogin()">
+            Entrar
+          </button>
+        </div>
+        <div class="login-footer">© 2026 BahTech · Todos os direitos reservados</div>
+      </div>
+    </div>
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <a class="logo" href="#">
+        <img src="bahtech_logotipo_negativo.png" alt="BahTech" style="height: 36px; width: auto; display: block;">
+      </a>
+
+      <nav class="topnav" id="topnav">
+        <a class="active" data-label="Visão Geral"
+          >Visão Geral<span class="dock-label">Visão Geral</span></a
+        >
+        <a data-label="Conversas"
+          >Conversas<span class="dock-label">Conversas</span></a
+        >
+        <a data-label="Tickets"
+          >Tickets<span class="dock-label">Tickets</span></a
+        >
+        <a data-label="Usuários"
+          >Usuários<span class="dock-label">Usuários</span></a
+        >
+        <a data-label="Relatórios"
+          >Relatórios<span class="dock-label">Relatórios</span></a
+        >
+      </nav>
+
+      <div class="topbar-right">
+        <div
+          id="topbar-dash-only"
+          style="display: flex; align-items: center; gap: 10px"
+        >
+          <div class="live-pill">
+            <div class="live-dot"></div>
+            Ao vivo
+          </div>
+          <div class="date-label">25 fev 2026</div>
+          <div class="filter-group">
+            <button class="filter-btn active" onclick="setFilter(this)">
+              Hoje
+            </button>
+            <button class="filter-btn" onclick="setFilter(this)">7d</button>
+            <button class="filter-btn" onclick="setFilter(this)">30d</button>
+            <button class="filter-btn" onclick="setFilter(this)">90d</button>
+          </div>
+        </div>
+        <!-- Notification Bell -->
+        <div class="notif-wrap" id="notifWrap">
+          <button class="notif-btn" onclick="toggleNotif(event)" title="Notificações">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-badge" id="notifBadge">3</span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-head">
+              <span>Notificações</span>
+              <button class="notif-clear" onclick="clearNotifs()">Marcar todas como lidas</button>
+            </div>
+            <div class="notif-item" onclick="readNotif(this)">
+              <div class="notif-dot" style="background:#f43f5e"></div>
+              <div>
+                <div class="notif-msg">Spike de chamados — +42% acima do normal esta hora</div>
+                <div class="notif-time">há 2 min</div>
+              </div>
+            </div>
+            <div class="notif-item" onclick="readNotif(this)">
+              <div class="notif-dot" style="background:#f59e0b"></div>
+              <div>
+                <div class="notif-msg">5 conversas aguardando há mais de 10 min</div>
+                <div class="notif-time">há 8 min</div>
+              </div>
+            </div>
+            <div class="notif-item" onclick="readNotif(this)">
+              <div class="notif-dot" style="background:#22d48c"></div>
+              <div>
+                <div class="notif-msg">Bot resolveu 78% dos chats hoje — melhor da semana</div>
+                <div class="notif-time">há 15 min</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout -->
+        <button class="logout-btn" onclick="doLogout()" title="Sair">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+
+        <div class="avatar">PA</div>
+      </div>
+    </header>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav" id="mobileNav">
+      <button class="mobile-nav-item active" data-page="page-dashboard" onclick="mobileNavigate(this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Início</span>
+      </button>
+      <button class="mobile-nav-item" data-page="page-conversas" onclick="mobileNavigate(this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Conversas</span>
+      </button>
+      <button class="mobile-nav-item" data-page="page-tickets" onclick="mobileNavigate(this)">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Tickets</span>
+      </button>
+      <button class="mobile-nav-item" data-page="page-usuarios" onclick="mobileNavigate(this)">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Usuários</span>
+      </button>
+      <button class="mobile-nav-item" data-page="page-relatorios" onclick="mobileNavigate(this)">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Relatórios</span>
+      </button>
+    </nav>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="page-dashboard" class="page-view active">
+      <div class="page">
+        <div class="page-title">
+          <h1>Dashboard de Atendimento</h1>
+          <p>Dados de hoje, atualizados em tempo real</p>
+        </div>
+
+        <!-- KPI ROW 1 -->
+        <div class="section-label">Visão Geral</div>
+        <div class="g4">
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Total de Chats</span>
+              <div class="metric-icon ic-purple">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-default" id="dashMetricTotal">312</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-up">↑ 12%</span>
+              <span class="metric-foot-text">vs. ontem</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Não Resolvidos</span>
+              <div class="metric-icon ic-red">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-red" id="dashMetricUnres">39</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-down">↑ 8%</span>
+              <span class="metric-foot-text">precisam atenção</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Escalados p/ Humano</span>
+              <div class="metric-icon ic-orange">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="14" x2="19" y2="7" />
+                  <polyline points="16 10 19 7 22 10" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-orange" id="dashMetricEsc">36</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-warn">11.5%</span>
+              <span class="metric-foot-text">taxa de escalada</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Resolvidos pelo Bot</span>
+              <div class="metric-icon ic-green">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-green" id="dashMetricBot">75.9%</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-up">↑ 3%</span>
+              <span class="metric-foot-text">taxa de resolução</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI ROW 2 -->
+        <div class="g4" style="margin-top: 12px">
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Ativos Agora</span>
+              <div class="metric-icon ic-blue">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-blue" id="dashMetricAct">9</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-neu">em andamento</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Tempo Médio Resposta</span>
+              <div class="metric-icon ic-teal">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-teal" id="dashMetricTime">2.3s</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-up">↓ 0.2s</span>
+              <span class="metric-foot-text">bot respondendo</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Satisfação (CSAT)</span>
+              <div class="metric-icon ic-green">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-green" id="dashMetricCsat">4.3</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-up">↑ 0.3</span>
+              <span class="metric-foot-text">média das avaliações</span>
+            </div>
+          </div>
+
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Aguardando Resposta</span>
+              <div class="metric-icon ic-orange">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12M7 22v-4.172a2 2 0 0 1 .586-1.414L12 12M17 2v4.172a2 2 0 0 1-.586 1.414L12 12M7 2v4.172a2 2 0 0 0 .586 1.414L12 12"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-orange" id="dashMetricWait">12</div>
+            <div class="skeleton-val shimmer"></div>
+            <div class="metric-foot">
+              <span class="badge b-warn">fila de espera</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHARTS + TICKETS -->
+        <div class="section-label" style="margin-top: 28px">
+          Atividade e Assuntos
+        </div>
+        <div class="g-chart">
+          <!-- Coluna esquerda: dois gráficos empilhados -->
+          <div class="charts-col">
+            <div class="card">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title" id="dashTitleNovos">Novos Chats por Hora</div>
+                  <div class="chart-sub" id="dashSubNovos">
+                    Distribuição de abertura ao longo do dia
+                  </div>
+                </div>
+                <div class="chart-legend">
+                  <div class="leg">
+                    <div class="leg-dot" style="background: #7c6af7"></div>
+                    Novos
+                  </div>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <div class="skeleton-chart shimmer"></div>
+                <canvas id="chartNovos"></canvas>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="chart-head">
+                <div>
+                  <div class="chart-title" id="dashTitleEnc">Chats Encerrados por Hora</div>
+                  <div class="chart-sub" id="dashSubEnc">
+                    Distribuição de encerramento ao longo do dia
+                  </div>
+                </div>
+                <div class="chart-legend">
+                  <div class="leg">
+                    <div class="leg-dot" style="background: #22d48c"></div>
+                    Encerrados
+                  </div>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <div class="skeleton-chart shimmer"></div>
+                <canvas id="chartEnc"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna direita: assuntos/tickets -->
+          <div class="card" style="display: flex; flex-direction: column">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Assuntos Frequentes</div>
+                <div class="chart-sub">Conversas que podem virar ticket</div>
+              </div>
+              <span class="badge b-neu" style="font-size: 10px">8 tópicos</span>
+            </div>
+            <div class="ticket-list" id="ticketList" style="flex: 1"></div>
+            <div
+              style="
+                margin-top: 14px;
+                padding-top: 12px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <span style="font-size: 11px; color: var(--text-muted)"
+                >39 conversas não resolvidas</span
+              >
+              <button
+                class="link-sm"
+                onclick="
+                  document.querySelector('[data-label=\'Tickets\']').click()
+                "
+              >
+                Ver tickets →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRENDS + DONUT -->
+        <div class="section-label">Tendências e Status</div>
+        <div class="g3">
+          <!-- Linha 14 dias (span 2) -->
+          <div
+            class="card"
+            style="grid-column: span 2; display: flex; flex-direction: column"
+          >
+            <div class="chart-head">
+              <div>
+                <div class="chart-title" id="dashTitleTend">Chats nos Últimos 14 Dias</div>
+                <div class="chart-sub" id="dashSubTend">Novos · Resolvidos · Escalados</div>
+              </div>
+              <div class="chart-legend">
+                <div class="leg">
+                  <div class="leg-dot" style="background: #7c6af7"></div>
+                  Novos
+                </div>
+                <div class="leg">
+                  <div class="leg-dot" style="background: #22d48c"></div>
+                  Resolvidos
+                </div>
+                <div class="leg">
+                  <div class="leg-dot" style="background: #f59e0b"></div>
+                  Escalados
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="flex: 1; min-height: 200px">
+              <div class="skeleton-chart shimmer"></div>
+              <canvas id="chartTend"></canvas>
+            </div>
+            <div
+              style="
+                margin-top: 14px;
+                padding-top: 12px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <div style="display: flex; gap: 24px">
+                <span style="font-size: 11px; color: var(--text-muted)"
+                  >Novos:
+                  <strong style="color: var(--text)" id="dashTendNovosVal">312</strong></span
+                >
+                <span style="font-size: 11px; color: var(--text-muted)"
+                  >Resolvidos:
+                  <strong style="color: var(--success)" id="dashTendResVal">237</strong></span
+                >
+                <span style="font-size: 11px; color: var(--text-muted)"
+                  >Escalados:
+                  <strong style="color: var(--warning)" id="dashTendEscVal">36</strong></span
+                >
+              </div>
+              <button
+                class="link-sm"
+                onclick="
+                  document.querySelector('[data-label=\'Relatórios\']').click()
+                "
+              >
+                Ver relatório →
+              </button>
+            </div>
+          </div>
+
+          <!-- Donut -->
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Status dos Chats</div>
+                <div class="chart-sub" id="dashSubDonut">Distribuição de hoje</div>
+              </div>
+            </div>
+            <div
+              class="chart-wrap"
+              style="min-height: 155px; position: relative"
+            >
+              <div class="skeleton-chart shimmer"></div>
+              <canvas id="chartDonut"></canvas>
+              <div class="donut-center">
+                <div class="dc-val" id="dashDonutTotal">312</div>
+                <div class="dc-lbl" id="dashDonutLbl">total hoje</div>
+              </div>
+            </div>
+            <div class="status-row">
+              <div class="stat-box">
+                <div class="stat-box-val cv-green" id="dashDonutResVal">237</div>
+                <div class="stat-box-lbl">Resolvidos</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-box-val cv-orange" id="dashDonutEscVal">36</div>
+                <div class="stat-box-lbl">Escalados</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-box-val cv-red" id="dashDonutPendVal">39</div>
+                <div class="stat-box-lbl">Pendentes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONVERSAS + PICO -->
+        <div class="section-label">Conversas Recentes</div>
+        <div class="g-bottom">
+          <!-- Tabela -->
+          <div class="card">
+            <div class="chart-head" style="margin-bottom: 10px">
+              <div class="chart-title">Últimas Conversas</div>
+              <button class="link-sm">Ver todas →</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Usuário</th>
+                    <th>Assunto</th>
+                    <th>Canal</th>
+                    <th>Status</th>
+                    <th>Hora</th>
+                  </tr>
+                </thead>
+                <tbody id="conversasBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pico de horas -->
+          <div class="card" style="display: flex; flex-direction: column">
+            <div class="chart-head" style="margin-bottom: 10px">
+              <div>
+                <div class="chart-title">Horários de Pico</div>
+                <div class="chart-sub">Faixas com maior volume de chats</div>
+              </div>
+            </div>
+            <div class="peak-list" id="peakList" style="flex: 1"></div>
+            <div
+              style="
+                margin-top: 14px;
+                padding-top: 12px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              "
+            >
+              <span style="font-size: 11px; color: var(--text-muted)"
+                >Pico máximo: 09h–10h com 28 chats</span
+              >
+              <button
+                class="link-sm"
+                onclick="
+                  document.querySelector('[data-label=\'Relatórios\']').click()
+                "
+              >
+                Ver relatório →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /page -->
+    </div>
+    <!-- /page-dashboard -->
+
+    <!-- CONVERSAS PAGE -->
+    <div id="page-conversas" class="page-view">
+      <div class="page">
+        <div class="page-title">
+          <h1>Conversas</h1>
+          <p>Histórico completo de atendimentos</p>
+        </div>
+
+        <!-- Status counters -->
+        <div class="g4" style="margin-bottom: 20px">
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Total</span>
+              <div class="metric-icon ic-purple">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-default">312</div>
+            <div class="metric-foot"><span class="badge b-neu">hoje</span></div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Abertas</span>
+              <div class="metric-icon ic-blue">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-blue">9</div>
+            <div class="metric-foot">
+              <span class="badge b-neu">em andamento</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Encerradas</span>
+              <div class="metric-icon ic-green">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-green">237</div>
+            <div class="metric-foot"><span class="badge b-up">75.9%</span></div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Escaladas</span>
+              <div class="metric-icon ic-orange">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="14" x2="19" y2="7" />
+                  <polyline points="16 10 19 7 22 10" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-orange">36</div>
+            <div class="metric-foot">
+              <span class="badge b-warn">11.5%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle
+                cx="6"
+                cy="6"
+                r="4.5"
+                stroke="#7a8394"
+                stroke-width="1.4"
+              />
+              <path
+                d="M9.5 9.5L12 12"
+                stroke="#7a8394"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              class="search-input"
+              id="convSearch"
+              type="text"
+              placeholder="Buscar por usuário, assunto ou ID…"
+              oninput="filterConvs()"
+            />
+          </div>
+
+          <div class="filter-tabs" id="statusTabs">
+            <button
+              class="ftab active"
+              data-status="all"
+              onclick="setStatusTab(this)"
+            >
+              Todos <span class="ftab-count" id="cnt-all">0</span>
+            </button>
+            <button
+              class="ftab"
+              data-status="open"
+              onclick="setStatusTab(this)"
+            >
+              Aberto <span class="ftab-count" id="cnt-open">0</span>
+            </button>
+            <button
+              class="ftab"
+              data-status="closed"
+              onclick="setStatusTab(this)"
+            >
+              Encerrado <span class="ftab-count" id="cnt-closed">0</span>
+            </button>
+            <button
+              class="ftab"
+              data-status="human"
+              onclick="setStatusTab(this)"
+            >
+              Humano <span class="ftab-count" id="cnt-human">0</span>
+            </button>
+            <button
+              class="ftab"
+              data-status="pending"
+              onclick="setStatusTab(this)"
+            >
+              Pendente <span class="ftab-count" id="cnt-pending">0</span>
+            </button>
+          </div>
+
+          <select
+            class="select-filter"
+            id="canalFilter"
+            onchange="filterConvs()"
+          >
+            <option value="all">Todos os canais</option>
+            <option value="Web">Web</option>
+            <option value="App">App</option>
+            <option value="Email">Email</option>
+          </select>
+
+          <select
+            class="select-filter"
+            id="assuntoFilter"
+            onchange="filterConvs()"
+          >
+            <option value="all">Todos os assuntos</option>
+            <option>Sem acesso</option>
+            <option>PIX não contabilizou</option>
+            <option>Reembolso</option>
+            <option>Site lento</option>
+            <option>Trocar senha</option>
+            <option>Esqueceu senha</option>
+            <option>Saque</option>
+            <option>Deletar conta</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="card" style="padding: 0; overflow: hidden">
+          <table class="conv-table">
+            <thead>
+              <tr>
+                <th style="padding: 0">
+                  <div
+                    class="conv-row-main"
+                    style="pointer-events: none; cursor: default"
+                  >
+                    <span class="conv-expand-icon" style="visibility: hidden"
+                      >▶</span
+                    >
+                    <span class="conv-cell" style="width: 60px">ID</span>
+                    <span class="conv-cell" style="flex: 1; min-width: 100px"
+                      >USUÁRIO</span
+                    >
+                    <span class="conv-cell" style="flex: 1.2; min-width: 120px"
+                      >E-MAIL</span
+                    >
+                    <span class="conv-cell" style="flex: 1.2; min-width: 130px"
+                      >ASSUNTO</span
+                    >
+                    <span class="conv-cell" style="width: 80px">CANAL</span>
+                    <span class="conv-cell" style="width: 90px">STATUS</span>
+                    <span class="conv-cell" style="width: 55px">DURAÇÃO</span>
+                    <span class="conv-cell" style="width: 80px">CSAT</span>
+                    <span class="conv-cell" style="width: 55px">HORA</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="convTableBody"></tbody>
+          </table>
+          <div
+            class="pagination"
+            style="padding: 12px 20px 14px"
+            id="convPagination"
+          ></div>
+        </div>
+      </div>
+    </div>
+    <!-- /page-conversas -->
+
+    <!-- TICKETS PAGE -->
+    <div id="page-tickets" class="page-view">
+      <div class="page">
+        <div class="page-title">
+          <h1>Tickets</h1>
+          <p>Gestão de bugs e melhorias gerados pelas conversas</p>
+        </div>
+
+        <!-- KPIs -->
+        <div class="g4" style="margin-bottom: 20px">
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Total de Tickets</span>
+              <div class="metric-icon ic-purple">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-default">8</div>
+            <div class="metric-foot">
+              <span class="badge b-neu">ativos</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Bugs</span>
+              <div class="metric-icon ic-red">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-red">4</div>
+            <div class="metric-foot">
+              <span class="badge b-down">prioridade alta</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Melhorias</span>
+              <div class="metric-icon ic-purple">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                  <polyline points="17 6 23 6 23 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-purple">4</div>
+            <div class="metric-foot">
+              <span class="badge b-neu">sugeridas</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Resolvidos</span>
+              <div class="metric-icon ic-green">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-green">1</div>
+            <div class="metric-foot">
+              <span class="badge b-up">este mês</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="search-bar" style="margin-bottom: 18px">
+          <div class="search-input-wrap" style="max-width: 300px">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle
+                cx="6"
+                cy="6"
+                r="4.5"
+                stroke="#7a8394"
+                stroke-width="1.4"
+              />
+              <path
+                d="M9.5 9.5L12 12"
+                stroke="#7a8394"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              class="search-input"
+              id="ticketSearch"
+              type="text"
+              placeholder="Buscar ticket…"
+              oninput="filterTicketBoard()"
+            />
+          </div>
+          <div class="filter-tabs" id="ticketTypeTabs">
+            <button
+              class="ftab active"
+              data-type="all"
+              onclick="setTicketType(this)"
+            >
+              Todos
+            </button>
+            <button class="ftab" data-type="bug" onclick="setTicketType(this)">
+              🐛 Bug
+            </button>
+            <button
+              class="ftab"
+              data-type="improvement"
+              onclick="setTicketType(this)"
+            >
+              💡 Melhoria
+            </button>
+          </div>
+          <select
+            class="select-filter"
+            id="ticketPrioFilter"
+            onchange="filterTicketBoard()"
+          >
+            <option value="all">Todas prioridades</option>
+            <option value="high">Alta</option>
+            <option value="medium">Média</option>
+            <option value="low">Baixa</option>
+          </select>
+        </div>
+
+        <!-- Kanban -->
+        <div class="kanban-board" id="kanbanBoard"></div>
+      </div>
+    </div>
+    <!-- /page-tickets -->
+
+    <!-- USUÁRIOS PAGE -->
+    <div id="page-usuarios" class="page-view">
+      <div class="page">
+        <div class="page-title">
+          <h1>Usuários</h1>
+          <p>Base de clientes e histórico de atendimentos</p>
+        </div>
+
+        <div class="g4" style="margin-bottom: 20px">
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Total de Usuários</span>
+              <div class="metric-icon ic-purple">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-default">3.847</div>
+            <div class="metric-foot">
+              <span class="badge b-up">↑ 8%</span
+              ><span class="metric-foot-text">este mês</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Ativos (30d)</span>
+              <div class="metric-icon ic-green">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <polyline points="16 11 18 13 22 9" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-green">2.910</div>
+            <div class="metric-foot">
+              <span class="badge b-up">75.6%</span
+              ><span class="metric-foot-text">da base</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Novos este Mês</span>
+              <div class="metric-icon ic-blue">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="8" x2="19" y2="14" />
+                  <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-blue">284</div>
+            <div class="metric-foot">
+              <span class="badge b-up">↑ 12%</span
+              ><span class="metric-foot-text">vs. mês anterior</span>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="metric-head">
+              <span class="metric-label">Churn Rate</span>
+              <div class="metric-icon ic-red">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                  <polyline points="17 18 23 18 23 12" />
+                </svg>
+              </div>
+            </div>
+            <div class="metric-val cv-red">3.2%</div>
+            <div class="metric-foot">
+              <span class="badge b-up">↓ 0.4%</span
+              ><span class="metric-foot-text">vs. mês anterior</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-bar" style="margin-bottom: 16px">
+          <div class="search-input-wrap" style="max-width: 320px">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle
+                cx="6"
+                cy="6"
+                r="4.5"
+                stroke="#7a8394"
+                stroke-width="1.4"
+              />
+              <path
+                d="M9.5 9.5L12 12"
+                stroke="#7a8394"
+                stroke-width="1.4"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              class="search-input"
+              id="userSearch"
+              type="text"
+              placeholder="Buscar por nome ou e-mail…"
+              oninput="filterUsers()"
+            />
+          </div>
+          <select
+            class="select-filter"
+            id="planFilter"
+            onchange="filterUsers()"
+          >
+            <option value="all">Todos os planos</option>
+            <option value="Pro">Pro</option>
+            <option value="Basic">Basic</option>
+            <option value="Trial">Trial</option>
+            <option value="Free">Free</option>
+          </select>
+          <select
+            class="select-filter"
+            id="userStatusFilter"
+            onchange="filterUsers()"
+          >
+            <option value="all">Todos os status</option>
+            <option value="active">Ativo</option>
+            <option value="inactive">Inativo</option>
+          </select>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden">
+          <table class="conv-table">
+            <thead>
+              <tr>
+                <th style="padding-left: 18px">Usuário</th>
+                <th>E-mail</th>
+                <th>Plano</th>
+                <th>Status</th>
+                <th>Cadastro</th>
+                <th>Chats</th>
+                <th>CSAT Médio</th>
+                <th>Última atividade</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+          <div
+            class="pagination"
+            style="padding: 12px 20px 14px"
+            id="userPagination"
+          ></div>
+        </div>
+      </div>
+    </div>
+    <!-- /page-usuarios -->
+
+    <!-- RELATÓRIOS PAGE -->
+    <div id="page-relatorios" class="page-view">
+      <div class="page">
+        <div
+          class="page-title"
+          style="justify-content: space-between; align-items: center"
+        >
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <h1>Relatórios</h1>
+            <p>Análise detalhada de performance</p>
+          </div>
+          <div class="period-tabs" id="relPeriodTabs">
+            <button
+              class="ptab active"
+              data-days="7"
+              onclick="setRelPeriod(this)"
+            >
+              7 dias
+            </button>
+            <button class="ptab" data-days="14" onclick="setRelPeriod(this)">
+              14 dias
+            </button>
+            <button class="ptab" data-days="30" onclick="setRelPeriod(this)">
+              30 dias
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI inline row -->
+        <div class="g4" style="margin-bottom: 18px" id="relKpis">
+          <div class="card kpi-inline">
+            <div class="kpi-inline-icon ic-purple">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-inline-val cv-default" id="relTotalChats">
+                1.960
+              </div>
+              <div class="kpi-inline-label">Chats no período</div>
+            </div>
+          </div>
+          <div class="card kpi-inline">
+            <div class="kpi-inline-icon ic-green">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-inline-val cv-green" id="relResolved">76.2%</div>
+              <div class="kpi-inline-label">Taxa de resolução</div>
+            </div>
+          </div>
+          <div class="card kpi-inline">
+            <div class="kpi-inline-icon ic-orange">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="14" x2="19" y2="7" />
+                <polyline points="16 10 19 7 22 10" />
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-inline-val cv-orange" id="relEscalated">
+                11.8%
+              </div>
+              <div class="kpi-inline-label">Taxa de escalada</div>
+            </div>
+          </div>
+          <div class="card kpi-inline">
+            <div class="kpi-inline-icon ic-teal">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-inline-val cv-teal" id="relCsat">4.3</div>
+              <div class="kpi-inline-label">CSAT médio</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts row 1 -->
+        <div class="rel-grid">
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Chats por Dia</div>
+                <div class="chart-sub">Volume diário no período</div>
+              </div>
+              <div class="chart-legend">
+                <div class="leg">
+                  <div class="leg-dot" style="background: #7c6af7"></div>
+                  Novos
+                </div>
+                <div class="leg">
+                  <div class="leg-dot" style="background: #22d48c"></div>
+                  Resolvidos
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="min-height: 180px">
+              <canvas id="relChartDia"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">CSAT ao Longo do Tempo</div>
+                <div class="chart-sub">Satisfação média por dia</div>
+              </div>
+              <div class="chart-legend">
+                <div class="leg">
+                  <div class="leg-dot" style="background: #22d48c"></div>
+                  CSAT
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="min-height: 180px">
+              <canvas id="relChartCsat"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts row 2 -->
+        <div class="rel-grid">
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Distribuição por Status</div>
+                <div class="chart-sub">
+                  Chats resolvidos vs. escalados vs. pendentes
+                </div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="min-height: 180px">
+              <canvas id="relChartStatus"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="chart-head">
+              <div>
+                <div class="chart-title">Assuntos Mais Frequentes</div>
+                <div class="chart-sub">Top 8 tópicos do período</div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="min-height: 180px">
+              <canvas id="relChartAssuntos"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agents table -->
+        <div class="card">
+          <div class="chart-head" style="margin-bottom: 12px">
+            <div class="chart-title">Performance por Agente Humano</div>
+            <span class="badge b-neu" style="font-size: 10px">4 agentes</span>
+          </div>
+          <div id="agentTable"></div>
+        </div>
+      </div>
+    </div>
+    <!-- /page-relatorios -->
+
+    <!-- Ticket detail modal -->
+    <div
+      class="modal-overlay"
+      id="ticketModal"
+      onclick="closeTicketModal(event)"
+    >
+      <div class="modal" id="ticketModalContent"></div>
+    </div>
+
+    <script>
+      // ── DADOS MOCK ─────────────────────────────────────────────────────────────
+      const horas = [
+        "00h",
+        "01h",
+        "02h",
+        "03h",
+        "04h",
+        "05h",
+        "06h",
+        "07h",
+        "08h",
+        "09h",
+        "10h",
+        "11h",
+        "12h",
+        "13h",
+        "14h",
+        "15h",
+        "16h",
+        "17h",
+        "18h",
+        "19h",
+        "20h",
+        "21h",
+        "22h",
+        "23h",
+      ];
+      const novosHora = [
+        1, 0, 0, 0, 1, 2, 4, 11, 20, 28, 26, 22, 18, 23, 26, 27, 24, 20, 16,
+        13, 9, 6, 4, 2,
+      ];
+      const encHora = [
+        1, 0, 0, 0, 1, 2, 3, 10, 18, 26, 24, 21, 17, 22, 24, 26, 22, 19, 15,
+        12, 8, 5, 3, 2,
+      ];
+
+      const dias14 = [
+        "12/02",
+        "13/02",
+        "14/02",
+        "15/02",
+        "16/02",
+        "17/02",
+        "18/02",
+        "19/02",
+        "20/02",
+        "21/02",
+        "22/02",
+        "23/02",
+        "24/02",
+        "25/02",
+      ];
+      const novos14 = [
+        265, 280, 140, 118, 310, 298, 285, 273, 290, 148, 125, 318, 305, 312,
+      ];
+      const res14 = [
+        198, 210, 105, 88, 234, 224, 214, 205, 218, 111, 94, 239, 229, 237,
+      ];
+      const esc14 = [
+        29, 31, 15, 13, 34, 33, 31, 30, 32, 16, 14, 35, 34, 36,
+      ];
+
+      const tickets = [
+        {
+          name: "Sem acesso após assinatura",
+          count: 38,
+          sev: "bug",
+          color: "#f43f5e",
+        },
+        {
+          name: "PIX não contabilizou",
+          count: 27,
+          sev: "bug",
+          color: "#f43f5e",
+        },
+        {
+          name: "Solicitação de reembolso",
+          count: 24,
+          sev: "high",
+          color: "#f59e0b",
+        },
+        {
+          name: "Site lento / instável",
+          count: 21,
+          sev: "high",
+          color: "#f59e0b",
+        },
+        {
+          name: "Não consegue trocar senha",
+          count: 18,
+          sev: "med",
+          color: "#38bdf8",
+        },
+        { name: "Esqueceu a senha", count: 15, sev: "med", color: "#38bdf8" },
+        {
+          name: "Solicitação de saque",
+          count: 12,
+          sev: "low",
+          color: "#22d48c",
+        },
+        { name: "Deletar conta", count: 9, sev: "low", color: "#22d48c" },
+      ];
+
+      const convs = [
+        {
+          id: "#4821",
+          user: "Maria S.",
+          sub: "Sem acesso",
+          ch: "Web",
+          st: "human",
+          h: "14:32",
+        },
+        {
+          id: "#4820",
+          user: "João R.",
+          sub: "PIX não contab.",
+          ch: "App",
+          st: "pending",
+          h: "14:28",
+        },
+        {
+          id: "#4819",
+          user: "Ana C.",
+          sub: "Reembolso",
+          ch: "Web",
+          st: "closed",
+          h: "14:21",
+        },
+        {
+          id: "#4818",
+          user: "Pedro L.",
+          sub: "Site lento",
+          ch: "App",
+          st: "open",
+          h: "14:15",
+        },
+        {
+          id: "#4817",
+          user: "Luana M.",
+          sub: "Trocar senha",
+          ch: "Email",
+          st: "closed",
+          h: "14:09",
+        },
+        {
+          id: "#4816",
+          user: "Carlos F.",
+          sub: "Saque",
+          ch: "App",
+          st: "human",
+          h: "14:02",
+        },
+        {
+          id: "#4815",
+          user: "Beatriz T.",
+          sub: "Deletar conta",
+          ch: "Web",
+          st: "closed",
+          h: "13:58",
+        },
+        {
+          id: "#4814",
+          user: "Felipe A.",
+          sub: "Esqueceu senha",
+          ch: "Email",
+          st: "open",
+          h: "13:51",
+        },
+      ];
+
+      const peaks = [
+        { h: "09h–10h", v: 28 },
+        { h: "15h–16h", v: 27 },
+        { h: "10h–11h", v: 26 },
+        { h: "14h–15h", v: 26 },
+        { h: "13h–14h", v: 23 },
+        { h: "17h–18h", v: 20 },
+      ];
+
+      // ── CHART DEFAULTS ─────────────────────────────────────────────────────────
+      Chart.defaults.color = "#7a8394";
+      Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+      Chart.defaults.font.size = 11;
+      const grid = "rgba(39,42,54,.8)";
+
+      function barChart(id, labels, data, color, label) {
+        const ctx = document.getElementById(id).getContext("2d");
+        const g = ctx.createLinearGradient(0, 0, 0, 200);
+        g.addColorStop(0, color + "bb");
+        g.addColorStop(1, color + "22");
+        return new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label,
+                data,
+                backgroundColor: g,
+                borderRadius: 4,
+                borderSkipped: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false, external: externalTooltipHandler },
+            },
+            scales: {
+              x: { grid: { color: grid }, ticks: { maxTicksLimit: 8 } },
+              y: { grid: { color: grid }, beginAtZero: true },
+            },
+          },
+        });
+      }
+
+      function lineChart(id) {
+        const ctx = document.getElementById(id).getContext("2d");
+        const g1 = ctx.createLinearGradient(0, 0, 0, 240);
+        g1.addColorStop(0, "rgba(124,106,247,.3)");
+        g1.addColorStop(1, "rgba(124,106,247,.01)");
+        const g2 = ctx.createLinearGradient(0, 0, 0, 240);
+        g2.addColorStop(0, "rgba(34,212,140,.25)");
+        g2.addColorStop(1, "rgba(34,212,140,.01)");
+        const g3 = ctx.createLinearGradient(0, 0, 0, 240);
+        g3.addColorStop(0, "rgba(245,158,11,.2)");
+        g3.addColorStop(1, "rgba(245,158,11,.01)");
+        return new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: dias14,
+            datasets: [
+              {
+                label: "Novos",
+                data: novos14,
+                borderColor: "#7c6af7",
+                backgroundColor: g1,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: "#7c6af7",
+              },
+              {
+                label: "Resolvidos",
+                data: res14,
+                borderColor: "#22d48c",
+                backgroundColor: g2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: "#22d48c",
+              },
+              {
+                label: "Escalados",
+                data: esc14,
+                borderColor: "#f59e0b",
+                backgroundColor: g3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: "#f59e0b",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: grid } },
+              y: { grid: { color: grid }, beginAtZero: false },
+            },
+          },
+        });
+      }
+
+      function donutChart(id) {
+        const ctx = document.getElementById(id).getContext("2d");
+        return new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Resolvidos", "Escalados", "Pendentes"],
+            datasets: [
+              {
+                data: [237, 36, 39],
+                backgroundColor: ["#22d48c", "#f59e0b", "#f43f5e"],
+                borderWidth: 3,
+                borderColor: "#16181f",
+                hoverOffset: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "73%",
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false, external: externalTooltipHandler },
+            },
+          },
+        });
+      }
+
+      // ── RENDER ──────────────────────────────────────────────────────────────────
+      function renderTickets() {
+        const max = tickets[0].count;
+        document.getElementById("ticketList").innerHTML = tickets
+          .map((t) => {
+            const pct = Math.round((t.count / max) * 100);
+            const sc = {
+              bug: "sev-bug",
+              high: "sev-high",
+              med: "sev-med",
+              low: "sev-low",
+            }[t.sev];
+            const sl = {
+              bug: "Bug",
+              high: "Atenção",
+              med: "Médio",
+              low: "Baixo",
+            }[t.sev];
+            return `<div class="ticket-row">
+      <div class="t-dot" style="background:${t.color}"></div>
+      <div class="t-name">${t.name}</div>
+      <div class="t-bar-wrap"><div class="t-bar" style="width:${pct}%;background:${t.color}"></div></div>
+      <div class="t-count" style="color:${t.color}">${t.count}</div>
+      <span class="sev ${sc}">${sl}</span>
+    </div>`;
+          })
+          .join("");
+      }
+
+      function renderConversas() {
+        const sm = {
+          open: { c: "s-open", l: "Aberto" },
+          closed: { c: "s-closed", l: "Encerrado" },
+          human: { c: "s-human", l: "Humano" },
+          pending: { c: "s-pending", l: "Pendente" },
+        };
+        const chIco = { Web: "🌐", App: "📱", Email: "📧" };
+        document.getElementById("conversasBody").innerHTML = convs
+          .map((c) => {
+            const s = sm[c.st];
+            return `<tr>
+      <td style="color:var(--primary-light);font-weight:600;">${c.id}</td>
+      <td>${c.user}</td>
+      <td style="color:var(--text-muted)">${c.sub}</td>
+      <td><span style="font-size:11px">${chIco[c.ch] || ""} ${c.ch}</span></td>
+      <td><span class="status-pill ${s.c}">${s.l}</span></td>
+      <td style="color:var(--text-muted)">${c.h}</td>
+    </tr>`;
+          })
+          .join("");
+      }
+
+      function renderPeaks() {
+        const max = Math.max(...peaks.map((p) => p.v));
+        document.getElementById("peakList").innerHTML = peaks
+          .map(
+            (p) => `
+    <div class="peak-row">
+      <span class="peak-h">${p.h}</span>
+      <div class="peak-bar-wrap"><div class="peak-bar" style="width:${Math.round((p.v / max) * 100)}%"></div></div>
+      <span class="peak-v">${p.v}</span>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ── MOCK DATA GENERATOR & ANIMATIONS ───────────────────────────────────────
+      const getOrCreateTooltip = (chart) => {
+        let tooltipEl = chart.canvas.parentNode.querySelector('div#chartjs-tooltip');
+        if (!tooltipEl) {
+          tooltipEl = document.createElement('div');
+          tooltipEl.id = 'chartjs-tooltip';
+          chart.canvas.parentNode.appendChild(tooltipEl);
+        }
+        return tooltipEl;
+      };
+
+      const externalTooltipHandler = (context) => {
+        const { chart, tooltip } = context;
+        const tooltipEl = getOrCreateTooltip(chart);
+
+        if (tooltip.opacity === 0) {
+          tooltipEl.style.opacity = 0;
+          return;
+        }
+
+        if (tooltip.body) {
+          const titleLines = tooltip.title || [];
+          const bodyLines = tooltip.body.map(b => b.lines);
+
+          let innerHtml = `<div class="tt-title">${titleLines[0] || 'Dados'}</div>`;
+          innerHtml += '<div class="tt-body">';
+          
+          tooltip.labelColors.forEach((color, i) => {
+            const line = bodyLines[i][0];
+            const parts = line.split(':');
+            innerHtml += `
+              <div class="tt-item">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="tt-dot" style="background:${color.borderColor}"></div>
+                  <span style="color:var(--text-muted)">${parts[0]}</span>
+                </div>
+                <span style="color:#fff">${parts[1]}</span>
+              </div>`;
+          });
+          innerHtml += '</div>';
+          tooltipEl.innerHTML = innerHtml;
+        }
+
+        const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+        tooltipEl.style.top = positionY + tooltip.caretY - 10 + 'px';
+        tooltipEl.style.transform = `translate(-50%, -100%)`;
+      };
+
+      function countUp(el, targetStr, duration = 800) {
+        let isFloat = targetStr.includes('.') || targetStr.includes(',');
+        let target = parseFloat(targetStr.replace(/\./g, '').replace(',', '.'));
+        // If it's a percentage or something non-numeric we just set it
+        if(isNaN(target) || targetStr.includes('%') || targetStr.includes('s')) {
+          el.textContent = targetStr;
+          return;
+        }
+
+        let startValue = 0;
+        let startTime = null;
+
+        function animate(currentTime) {
+          if (!startTime) startTime = currentTime;
+          const progress = Math.min((currentTime - startTime) / duration, 1);
+          // Ease out expo
+          const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          const currentVal = startValue + (target - startValue) * easeProgress;
+
+          if (isFloat && target < 10) {
+             el.textContent = currentVal.toFixed(1).replace('.', ',');
+          }
+           else {
+             el.textContent = Math.floor(currentVal).toLocaleString('pt-BR');
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+             el.textContent = targetStr; // ensure exact final string
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      function generateRealisticData(days) {
+        const labels = [];
+        const novos = [];
+        const enc = [];
+        
+        let baseVolume = 280; // Base daily chats
+        if (days === 1) baseVolume = 13; // hourly base
+        
+        const now = new Date("2026-02-25T12:00:00");
+        let totalNovos = 0;
+        let totalRes = 0;
+        let totalEsc = 0;
+
+        const loopCount = days === 1 ? 24 : days;
+
+        for (let i = loopCount - 1; i >= 0; i--) {
+          let vol = baseVolume + (Math.random() * (baseVolume * 0.4)) - (baseVolume * 0.2); // +/- 20% noise
+          
+          if (days > 1) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            const dayOfWeek = d.getDay();
+            // Weekend dip (40-60% drop)
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+               vol = vol * (0.4 + Math.random() * 0.2);
+            }
+            labels.push(d.getDate() + '/' + (d.getMonth() + 1));
+          } else {
+            // Hourly logic (night is very low)
+            const h = 23 - i;
+            if (h < 6) vol = vol * 0.1;
+            else if (h > 20) vol = vol * 0.4;
+            labels.push(String(h).padStart(2, '0') + 'h');
+          }
+          
+          vol = Math.round(vol);
+          novos.push(vol);
+          totalNovos += vol;
+          
+          let resVol = Math.round(vol * (0.73 + Math.random() * 0.07)); // 73-80% resolved
+          enc.push(resVol);
+          totalRes += resVol;
+          totalEsc += Math.round(vol * 0.12); // ~12% escalated
+        }
+
+        const unres = totalNovos - totalRes - totalEsc;
+        const botPct = ((totalRes / totalNovos) * 100).toFixed(1);
+        
+        // Slight organic variations for KPIs
+        const csat = (4.4 + Math.random() * 0.4).toFixed(1);
+        const time = (1.1 + Math.random() * 0.5).toFixed(1);
+        const wait = Math.round(20 + Math.random() * 30);
+        const act = Math.round(30 + Math.random() * 20);
+
+        return {
+          total: totalNovos.toLocaleString('pt-BR'),
+          unres: Math.max(0, unres).toLocaleString('pt-BR'),
+          esc: totalEsc.toLocaleString('pt-BR'),
+          bot: botPct + '%',
+          act: act.toString(),
+          time: time + 's',
+          csat: csat,
+          wait: wait.toString(),
+          labels, novos, enc,
+          tendNovos: totalNovos.toLocaleString('pt-BR'),
+          tendRes: totalRes.toLocaleString('pt-BR'),
+          tendEsc: totalEsc.toLocaleString('pt-BR'),
+          donutRes: totalRes, donutEsc: totalEsc, donutPend: Math.max(0, unres), donutTotal: totalNovos.toLocaleString('pt-BR')
+        };
+      }
+
+      // Pre-generate the 4 datasets so they don't randomly jump on re-click
+      const d1 = generateRealisticData(1);
+      const d7 = generateRealisticData(7);
+      const d30 = generateRealisticData(30);
+      const d90 = generateRealisticData(90);
+
+      const dashMockData = {
+        'Hoje': {
+          ...d1,
+          labelX: 'Novos chats', encX: 'Encerrados', titleSuffix: 'por Hora', subSuffix: 'ao longo do dia',
+          tendTitle: 'Chats nas Últimas 24 Horas', tendSub: 'Novos · Resolvidos · Escalados',
+          tendLabels: d1.labels, tendNovosData: d1.novos, tendResData: d1.enc, tendEscData: d1.novos.map(v => Math.round(v*0.12)),
+          donutTitle: 'Distribuição de hoje'
+        },
+        '7d': {
+          ...d7,
+          labelX: 'Novos chats', encX: 'Encerrados', titleSuffix: 'por Dia', subSuffix: 'nos últimos 7 dias',
+          tendTitle: 'Chats nos Últimos 7 Dias', tendSub: 'Novos · Resolvidos · Escalados',
+          tendLabels: d7.labels, tendNovosData: d7.novos, tendResData: d7.enc, tendEscData: d7.novos.map(v => Math.round(v*0.12)),
+          donutTitle: 'Distribuição em 7 dias'
+        },
+        '30d': {
+          ...d30,
+          labelX: 'Novos chats', encX: 'Encerrados', titleSuffix: 'por Dia', subSuffix: 'nos últimos 30 dias',
+          tendTitle: 'Chats nos Últimos 30 Dias', tendSub: 'Diário',
+          tendLabels: d30.labels, tendNovosData: d30.novos, tendResData: d30.enc, tendEscData: d30.novos.map(v => Math.round(v*0.12)),
+          donutTitle: 'Distribuição em 30 dias'
+        },
+        '90d': {
+          ...d90,
+          labelX: 'Novos chats', encX: 'Encerrados', titleSuffix: 'por Dia', subSuffix: 'nos últimos 90 dias',
+          tendTitle: 'Chats nos Últimos 90 Dias', tendSub: 'Diário',
+          tendLabels: d90.labels, tendNovosData: d90.novos, tendResData: d90.enc, tendEscData: d90.novos.map(v => Math.round(v*0.12)),
+          donutTitle: 'Distribuição em 90 dias'
+        }
+      };
+
+      let currentChartNovos = null;
+      let currentChartEnc = null;
+      let currentChartTend = null;
+      let currentChartDonut = null;
+
+      function updateDashboardCharts(filter) {
+        const d = dashMockData[filter];
+        if (!d) return;
+
+        const pageEl = document.getElementById("page-dashboard");
+        
+        // Ativa estado de carregamento (mostra skeletons)
+        pageEl.classList.add("is-loading");
+        
+        // Pequeno delay para o usuário perceber o "carregamento" (mind-blowing UX)
+        setTimeout(() => {
+          // Atualiza IDs visuais com animação
+          countUp(document.getElementById('dashMetricTotal'), d.total);
+          countUp(document.getElementById('dashMetricUnres'), d.unres);
+          countUp(document.getElementById('dashMetricEsc'), d.esc);
+          countUp(document.getElementById('dashMetricBot'), d.bot);
+          countUp(document.getElementById('dashMetricAct'), d.act);
+          countUp(document.getElementById('dashMetricTime'), d.time);
+          countUp(document.getElementById('dashMetricCsat'), d.csat);
+          countUp(document.getElementById('dashMetricWait'), d.wait);
+
+          document.getElementById('dashTitleNovos').textContent = 'Novos Chats ' + d.titleSuffix;
+          document.getElementById('dashSubNovos').textContent = 'Distribuição ' + d.subSuffix;
+          document.getElementById('dashTitleEnc').textContent = 'Chats Encerrados ' + d.titleSuffix;
+          document.getElementById('dashSubEnc').textContent = 'Distribuição ' + d.subSuffix;
+
+          document.getElementById('dashTitleTend').textContent = d.tendTitle;
+          document.getElementById('dashSubTend').textContent = d.tendSub;
+          countUp(document.getElementById('dashTendNovosVal'), d.tendNovos);
+          countUp(document.getElementById('dashTendResVal'), d.tendRes);
+          countUp(document.getElementById('dashTendEscVal'), d.tendEsc);
+
+          document.getElementById('dashSubDonut').textContent = d.donutTitle;
+          countUp(document.getElementById('dashDonutTotal'), d.donutTotal);
+          countUp(document.getElementById('dashDonutResVal'), d.donutRes.toLocaleString('pt-BR'));
+          countUp(document.getElementById('dashDonutEscVal'), d.donutEsc.toLocaleString('pt-BR'));
+          countUp(document.getElementById('dashDonutPendVal'), d.donutPend.toLocaleString('pt-BR'));
+
+          // Remove estado de carregamento e mostra conteúdo real
+          pageEl.classList.remove("is-loading");
+
+          // Recria os gráficos
+          if(currentChartNovos) currentChartNovos.destroy();
+          currentChartNovos = barChart("chartNovos", d.labels, d.novos, "#7c6af7", d.labelX);
+  
+          if(currentChartEnc) currentChartEnc.destroy();
+          currentChartEnc = barChart("chartEnc", d.labels, d.enc, "#22d48c", d.encX);
+  
+          if(currentChartDonut) currentChartDonut.destroy();
+          const ctxDonut = document.getElementById("chartDonut").getContext("2d");
+          currentChartDonut = new Chart(ctxDonut, {
+            type: "doughnut",
+            data: {
+              labels: ["Resolvidos", "Escalados", "Pendentes"],
+              datasets: [
+                {
+                  data: [d.donutRes, d.donutEsc, d.donutPend],
+                  backgroundColor: ["#22d48c", "#f59e0b", "#f43f5e"],
+                  borderWidth: 3, borderColor: "#16181f", hoverOffset: 5,
+                },
+              ],
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false, cutout: "73%",
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false, external: externalTooltipHandler },
+              },
+            },
+          });
+  
+          if(currentChartTend) currentChartTend.destroy();
+          const ctxTend = document.getElementById("chartTend").getContext("2d");
+          const g1 = ctxTend.createLinearGradient(0, 0, 0, 240);
+          g1.addColorStop(0, "rgba(124,106,247,.3)");
+          g1.addColorStop(1, "rgba(124,106,247,.01)");
+          const g2 = ctxTend.createLinearGradient(0, 0, 0, 240);
+          g2.addColorStop(0, "rgba(34,212,140,.25)");
+          g2.addColorStop(1, "rgba(34,212,140,.01)");
+          const g3 = ctxTend.createLinearGradient(0, 0, 0, 240);
+          g3.addColorStop(0, "rgba(245,158,11,.2)");
+          g3.addColorStop(1, "rgba(245,158,11,.01)");
+          
+          currentChartTend = new Chart(ctxTend, {
+            type: "line",
+            data: {
+              labels: d.tendLabels,
+              datasets: [
+                { label: "Novos", data: d.tendNovosData, borderColor: "#7c6af7", backgroundColor: g1, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: "#7c6af7" },
+                { label: "Resolvidos", data: d.tendResData, borderColor: "#22d48c", backgroundColor: g2, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: "#22d48c" },
+                { label: "Escalados", data: d.tendEscData, borderColor: "#f59e0b", backgroundColor: g3, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: "#f59e0b" }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false, external: externalTooltipHandler },
+              },
+              scales: { x: { grid: { color: "rgba(39,42,54,.8)" } }, y: { grid: { color: "rgba(39,42,54,.8)" }, beginAtZero: false } }
+            }
+          });
+        }, 450); // Delay planejado para exibir o shimmer effect
+      }
+
+
+      function setFilter(btn) {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        
+        updateDashboardCharts(btn.textContent.trim());
+      }
+
+      // ── DOCK MAGNIFICATION ──────────────────────────────────────────────────────
+      (function () {
+        const nav = document.getElementById("topnav");
+        const items = () => Array.from(nav.querySelectorAll("a"));
+        const MAX_SCALE = 1.35; // scale at cursor
+        const REACH = 110; // px radius of influence
+
+        function getCenter(el) {
+          const r = el.getBoundingClientRect();
+          return r.left + r.width / 2;
+        }
+
+        nav.addEventListener("mousemove", (e) => {
+          const mx = e.clientX;
+          items().forEach((el) => {
+            const cx = getCenter(el);
+            const dist = Math.abs(mx - cx);
+            const scale =
+              dist < REACH ? MAX_SCALE - (MAX_SCALE - 1) * (dist / REACH) : 1;
+            el.style.transform = `scale(${scale.toFixed(3)})`;
+          });
+        });
+
+        nav.addEventListener("mouseleave", () => {
+          items().forEach((el) => {
+            el.style.transform = "scale(1)";
+          });
+        });
+
+        // nav tab switching + page routing
+        const pageMap = {
+          "Visão Geral": "page-dashboard",
+          Conversas: "page-conversas",
+          Tickets: "page-tickets",
+          Usuários: "page-usuarios",
+          Relatórios: "page-relatorios",
+        };
+        nav.addEventListener("click", (e) => {
+          const link = e.target.closest("a");
+          if (!link) return;
+          items().forEach((el) => el.classList.remove("active"));
+          link.classList.add("active");
+          const label = link.dataset.label;
+          document
+            .querySelectorAll(".page-view")
+            .forEach((p) => p.classList.remove("active"));
+          const target = pageMap[label] || "page-dashboard";
+          document.getElementById(target).classList.add("active");
+          document.getElementById("topbar-dash-only").style.display =
+            target === "page-dashboard" ? "flex" : "none";
+          // Sync mobile nav active state
+          document.querySelectorAll('.mobile-nav-item').forEach(b => {
+            b.classList.toggle('active', b.dataset.page === target);
+          });
+        });
+      })();
+
+      // ── CONVERSAS MOCK DATA ──────────────────────────────────────────────────────
+      const chIco = { Web: "🌐", App: "📱", Email: "📧" };
+      const statusMeta = {
+        open: { cls: "s-open", label: "Aberto" },
+        closed: { cls: "s-closed", label: "Encerrado" },
+        human: { cls: "s-human", label: "Humano" },
+        pending: { cls: "s-pending", label: "Pendente" },
+      };
+
+      const allConvs = [
+        {
+          id: "#4821",
+          user: "Maria S.",
+          email: "maria.s@email.com",
+          sub: "Sem acesso",
+          ch: "Web",
+          st: "human",
+          dur: "8m",
+          csat: null,
+          h: "14:32",
+          msgs: [
+            { r: "bot", t: "14:30", m: "Olá Maria! Como posso ajudar?" },
+            {
+              r: "user",
+              t: "14:30",
+              m: "Não consigo acessar minha conta, assinei há 2 dias.",
+            },
+            {
+              r: "bot",
+              t: "14:31",
+              m: "Entendo. Você já verificou o e-mail de confirmação?",
+            },
+            {
+              r: "user",
+              t: "14:31",
+              m: "Sim, confirmei mas o acesso não liberou.",
+            },
+            {
+              r: "bot",
+              t: "14:32",
+              m: "Vou transferir para um agente humano resolver isso com urgência.",
+            },
+          ],
+        },
+        {
+          id: "#4820",
+          user: "João R.",
+          email: "joao.r@email.com",
+          sub: "PIX não contabilizou",
+          ch: "App",
+          st: "pending",
+          dur: "5m",
+          csat: null,
+          h: "14:28",
+          msgs: [
+            { r: "bot", t: "14:23", m: "Olá João! Em que posso ajudar?" },
+            {
+              r: "user",
+              t: "14:23",
+              m: "Fiz um pix de R$49,90 para assinar mas não ativou.",
+            },
+            { r: "bot", t: "14:24", m: "Pode me informar o ID da transação?" },
+            { r: "user", t: "14:25", m: "E2024022512345678" },
+            {
+              r: "bot",
+              t: "14:26",
+              m: "Estou verificando... pode levar até 30 minutos para compensar.",
+            },
+          ],
+        },
+        {
+          id: "#4819",
+          user: "Ana C.",
+          email: "ana.c@email.com",
+          sub: "Reembolso",
+          ch: "Web",
+          st: "closed",
+          dur: "12m",
+          csat: 5,
+          h: "14:21",
+          msgs: [
+            { r: "bot", t: "14:09", m: "Olá Ana! Como posso ajudar?" },
+            {
+              r: "user",
+              t: "14:09",
+              m: "Quero solicitar reembolso da minha assinatura.",
+            },
+            {
+              r: "bot",
+              t: "14:10",
+              m: "Claro! Qual o motivo do cancelamento?",
+            },
+            { r: "user", t: "14:11", m: "Não estou usando mais o serviço." },
+            {
+              r: "bot",
+              t: "14:12",
+              m: "Entendido. O reembolso será processado em 5 dias úteis para o cartão final 4321.",
+            },
+          ],
+        },
+        {
+          id: "#4818",
+          user: "Pedro L.",
+          email: "pedro.l@email.com",
+          sub: "Site lento",
+          ch: "App",
+          st: "open",
+          dur: "3m",
+          csat: null,
+          h: "14:15",
+          msgs: [
+            { r: "bot", t: "14:12", m: "Olá Pedro!" },
+            {
+              r: "user",
+              t: "14:12",
+              m: "O site está muito lento hoje, demora mais de 10s para carregar.",
+            },
+            {
+              r: "bot",
+              t: "14:13",
+              m: "Obrigado pelo feedback. Há lentidão em páginas específicas?",
+            },
+            { r: "user", t: "14:14", m: "No dashboard principalmente." },
+          ],
+        },
+        {
+          id: "#4817",
+          user: "Luana M.",
+          email: "luana.m@email.com",
+          sub: "Trocar senha",
+          ch: "Email",
+          st: "closed",
+          dur: "6m",
+          csat: 4,
+          h: "14:09",
+          msgs: [
+            { r: "bot", t: "14:03", m: "Olá! Como posso ajudar?" },
+            {
+              r: "user",
+              t: "14:03",
+              m: "Não consigo trocar minha senha, o botão não funciona.",
+            },
+            { r: "bot", t: "14:04", m: "Qual navegador está usando?" },
+            { r: "user", t: "14:05", m: "Google Chrome, versão mais recente." },
+            {
+              r: "bot",
+              t: "14:06",
+              m: "Tente limpar o cache do navegador. Caso persista, tente pelo app mobile.",
+            },
+          ],
+        },
+        {
+          id: "#4816",
+          user: "Carlos F.",
+          email: "carlos.f@email.com",
+          sub: "Saque",
+          ch: "App",
+          st: "human",
+          dur: "15m",
+          csat: null,
+          h: "14:02",
+          msgs: [
+            { r: "bot", t: "13:47", m: "Olá Carlos!" },
+            {
+              r: "user",
+              t: "13:47",
+              m: "Quero fazer um saque do meu saldo de R$320.",
+            },
+            {
+              r: "bot",
+              t: "13:48",
+              m: "Para saques acima de R$300 é necessário verificação adicional.",
+            },
+            { r: "user", t: "13:50", m: "Como faço essa verificação?" },
+            {
+              r: "bot",
+              t: "13:52",
+              m: "Vou transferir para um agente que vai guiar o processo.",
+            },
+          ],
+        },
+        {
+          id: "#4815",
+          user: "Beatriz T.",
+          email: "beatriz.t@email.com",
+          sub: "Deletar conta",
+          ch: "Web",
+          st: "closed",
+          dur: "4m",
+          csat: 5,
+          h: "13:58",
+          msgs: [
+            { r: "bot", t: "13:54", m: "Olá Beatriz!" },
+            {
+              r: "user",
+              t: "13:54",
+              m: "Quero deletar minha conta permanentemente.",
+            },
+            {
+              r: "bot",
+              t: "13:55",
+              m: "Vou processar sua solicitação. Tem certeza? Todos os dados serão removidos.",
+            },
+            { r: "user", t: "13:56", m: "Sim, tenho certeza." },
+            {
+              r: "bot",
+              t: "13:57",
+              m: "Conta agendada para exclusão em 30 dias. Você receberá um e-mail de confirmação.",
+            },
+          ],
+        },
+        {
+          id: "#4814",
+          user: "Felipe A.",
+          email: "felipe.a@email.com",
+          sub: "Esqueceu senha",
+          ch: "Email",
+          st: "open",
+          dur: "2m",
+          csat: null,
+          h: "13:51",
+          msgs: [
+            { r: "bot", t: "13:49", m: "Olá Felipe!" },
+            {
+              r: "user",
+              t: "13:49",
+              m: "Esqueci minha senha e o link de recuperação não chega.",
+            },
+            {
+              r: "bot",
+              t: "13:50",
+              m: "Verifique a pasta de spam. Qual e-mail está cadastrado?",
+            },
+            { r: "user", t: "13:51", m: "felipe.a@email.com" },
+          ],
+        },
+        {
+          id: "#4813",
+          user: "Rafaela P.",
+          email: "rafa.p@email.com",
+          sub: "PIX não contabilizou",
+          ch: "App",
+          st: "closed",
+          dur: "9m",
+          csat: 3,
+          h: "13:44",
+          msgs: [
+            { r: "bot", t: "13:35", m: "Olá Rafaela!" },
+            {
+              r: "user",
+              t: "13:35",
+              m: "Meu pix foi debitado mas assinatura não ativou.",
+            },
+            {
+              r: "bot",
+              t: "13:36",
+              m: "Entendido, vou verificar o pagamento.",
+            },
+            { r: "user", t: "13:38", m: "Já faz 2 horas..." },
+            {
+              r: "bot",
+              t: "13:40",
+              m: "Identificamos o pagamento. O acesso foi liberado. Por favor, faça logout e login novamente.",
+            },
+          ],
+        },
+        {
+          id: "#4812",
+          user: "Gustavo N.",
+          email: "gus.n@email.com",
+          sub: "Sem acesso",
+          ch: "Web",
+          st: "closed",
+          dur: "11m",
+          csat: 4,
+          h: "13:30",
+          msgs: [
+            { r: "bot", t: "13:19", m: "Olá Gustavo!" },
+            {
+              r: "user",
+              t: "13:19",
+              m: "Assine ontem e ainda não tenho acesso ao painel.",
+            },
+            { r: "bot", t: "13:20", m: "Qual e-mail usou no cadastro?" },
+            { r: "user", t: "13:21", m: "gus.n@email.com" },
+            {
+              r: "bot",
+              t: "13:25",
+              m: "Encontrei sua conta. O acesso foi reativado agora.",
+            },
+          ],
+        },
+        {
+          id: "#4811",
+          user: "Camila W.",
+          email: "cami.w@email.com",
+          sub: "Reembolso",
+          ch: "Web",
+          st: "pending",
+          dur: "7m",
+          csat: null,
+          h: "13:18",
+          msgs: [
+            { r: "bot", t: "13:11", m: "Olá!" },
+            {
+              r: "user",
+              t: "13:11",
+              m: "Quero reembolso, cobrou duas vezes no meu cartão.",
+            },
+            {
+              r: "bot",
+              t: "13:12",
+              m: "Vou verificar a duplicata. Pode informar os últimos 4 dígitos do cartão?",
+            },
+            { r: "user", t: "13:13", m: "Final 8890." },
+            {
+              r: "bot",
+              t: "13:15",
+              m: "Confirmamos a cobrança duplicada. Estornando a segunda cobrança em breve.",
+            },
+          ],
+        },
+        {
+          id: "#4810",
+          user: "Tiago M.",
+          email: "tiago.m@email.com",
+          sub: "Site lento",
+          ch: "App",
+          st: "closed",
+          dur: "3m",
+          csat: 2,
+          h: "13:05",
+          msgs: [
+            { r: "bot", t: "13:02", m: "Olá Tiago!" },
+            { r: "user", t: "13:02", m: "App travando muito hoje." },
+            { r: "bot", t: "13:03", m: "Qual a versão do app?" },
+            { r: "user", t: "13:04", m: "2.1.4 no Android." },
+            {
+              r: "bot",
+              t: "13:04",
+              m: "Há uma atualização disponível (2.1.5) que corrige esse problema.",
+            },
+          ],
+        },
+        {
+          id: "#4809",
+          user: "Isabela R.",
+          email: "isa.r@email.com",
+          sub: "Trocar senha",
+          ch: "Web",
+          st: "closed",
+          dur: "5m",
+          csat: 5,
+          h: "12:52",
+          msgs: [
+            { r: "bot", t: "12:47", m: "Olá Isabela!" },
+            { r: "user", t: "12:47", m: "Preciso trocar minha senha." },
+            {
+              r: "bot",
+              t: "12:48",
+              m: "Acesse Configurações > Segurança > Alterar senha.",
+            },
+            { r: "user", t: "12:50", m: "Funcionou! Obrigada." },
+            { r: "bot", t: "12:51", m: "Ótimo! Qualquer dúvida estamos aqui." },
+          ],
+        },
+        {
+          id: "#4808",
+          user: "Ricardo S.",
+          email: "ric.s@email.com",
+          sub: "Saque",
+          ch: "Email",
+          st: "human",
+          dur: "20m",
+          csat: null,
+          h: "12:40",
+          msgs: [
+            { r: "bot", t: "12:20", m: "Olá Ricardo!" },
+            {
+              r: "user",
+              t: "12:20",
+              m: "Meu saque de R$1200 não caiu ainda, já faz 3 dias.",
+            },
+            {
+              r: "bot",
+              t: "12:21",
+              m: "Saques acima de R$500 passam por análise. Vou escalar para o financeiro.",
+            },
+            { r: "user", t: "12:25", m: "Preciso urgente disso." },
+          ],
+        },
+        {
+          id: "#4807",
+          user: "Fernanda L.",
+          email: "fer.l@email.com",
+          sub: "Esqueceu senha",
+          ch: "App",
+          st: "closed",
+          dur: "4m",
+          csat: 5,
+          h: "12:31",
+          msgs: [
+            { r: "bot", t: "12:27", m: "Olá!" },
+            { r: "user", t: "12:27", m: "Esqueci a senha." },
+            {
+              r: "bot",
+              t: "12:28",
+              m: 'Clique em "Esqueci minha senha" na tela de login e siga as instruções.',
+            },
+            { r: "user", t: "12:30", m: "Consegui! Valeu." },
+            { r: "bot", t: "12:30", m: "Ótimo! Até mais!" },
+          ],
+        },
+        {
+          id: "#4806",
+          user: "André B.",
+          email: "andre.b@email.com",
+          sub: "Deletar conta",
+          ch: "Web",
+          st: "closed",
+          dur: "6m",
+          csat: 4,
+          h: "12:20",
+          msgs: [
+            { r: "bot", t: "12:14", m: "Olá André!" },
+            {
+              r: "user",
+              t: "12:14",
+              m: "Quero cancelar e deletar minha conta.",
+            },
+            {
+              r: "bot",
+              t: "12:15",
+              m: "Sentiremos sua falta. Posso perguntar o motivo?",
+            },
+            { r: "user", t: "12:16", m: "Não uso mais." },
+            {
+              r: "bot",
+              t: "12:18",
+              m: "Solicitação registrada. Conta será excluída em 30 dias.",
+            },
+          ],
+        },
+        {
+          id: "#4805",
+          user: "Juliana O.",
+          email: "ju.o@email.com",
+          sub: "Sem acesso",
+          ch: "App",
+          st: "pending",
+          dur: "10m",
+          csat: null,
+          h: "12:08",
+          msgs: [
+            { r: "bot", t: "11:58", m: "Olá Juliana!" },
+            { r: "user", t: "11:58", m: "Não consigo logar desde ontem." },
+            {
+              r: "bot",
+              t: "11:59",
+              m: "Sua conta está com verificação pendente de e-mail.",
+            },
+            { r: "user", t: "12:01", m: "Mas confirmei o email sim." },
+            {
+              r: "bot",
+              t: "12:03",
+              m: "Aguarde, estou verificando no sistema...",
+            },
+          ],
+        },
+        {
+          id: "#4804",
+          user: "Marcos V.",
+          email: "marcos.v@email.com",
+          sub: "PIX não contabilizou",
+          ch: "Web",
+          st: "closed",
+          dur: "8m",
+          csat: 4,
+          h: "11:55",
+          msgs: [
+            { r: "bot", t: "11:47", m: "Olá Marcos!" },
+            { r: "user", t: "11:47", m: "Paguei via PIX mas não ativou." },
+            { r: "bot", t: "11:48", m: "Informe o comprovante ou ID do PIX." },
+            { r: "user", t: "11:50", m: "E2024022598765432" },
+            {
+              r: "bot",
+              t: "11:53",
+              m: "Pagamento localizado e acesso ativado!",
+            },
+          ],
+        },
+        {
+          id: "#4803",
+          user: "Aline C.",
+          email: "aline.c@email.com",
+          sub: "Reembolso",
+          ch: "Email",
+          st: "closed",
+          dur: "14m",
+          csat: 3,
+          h: "11:40",
+          msgs: [
+            { r: "bot", t: "11:26", m: "Olá Aline!" },
+            { r: "user", t: "11:26", m: "Quero meu dinheiro de volta." },
+            {
+              r: "bot",
+              t: "11:27",
+              m: "Vou verificar se está dentro do prazo de reembolso (7 dias).",
+            },
+            { r: "user", t: "11:30", m: "Assinei há 5 dias." },
+            {
+              r: "bot",
+              t: "11:35",
+              m: "Aprovado! Reembolso em até 5 dias úteis.",
+            },
+          ],
+        },
+        {
+          id: "#4802",
+          user: "Bruno K.",
+          email: "bruno.k@email.com",
+          sub: "Site lento",
+          ch: "App",
+          st: "open",
+          dur: "1m",
+          csat: null,
+          h: "11:32",
+          msgs: [
+            { r: "bot", t: "11:31", m: "Olá Bruno!" },
+            {
+              r: "user",
+              t: "11:31",
+              m: "Site caindo no celular, não carrega nada.",
+            },
+            {
+              r: "bot",
+              t: "11:32",
+              m: "Qual operadora está usando? Pode ser instabilidade de rede.",
+            },
+          ],
+        },
+      ];
+
+      // ── CONVERSAS PAGE LOGIC ────────────────────────────────────────────────────
+      let convCurrentPage = 1;
+      const CONV_PER_PAGE = 10;
+      let convFiltered = [...allConvs];
+      let convStatusFilter = "all";
+
+      function updateCounts() {
+        const counts = {
+          all: allConvs.length,
+          open: 0,
+          closed: 0,
+          human: 0,
+          pending: 0,
+        };
+        allConvs.forEach((c) => counts[c.st]++);
+        Object.keys(counts).forEach((k) => {
+          const el = document.getElementById("cnt-" + k);
+          if (el) el.textContent = counts[k];
+        });
+      }
+
+      function setStatusTab(btn) {
+        document
+          .querySelectorAll("#statusTabs .ftab")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        convStatusFilter = btn.dataset.status;
+        convCurrentPage = 1;
+        filterConvs();
+      }
+
+      function filterConvs() {
+        const q = (
+          document.getElementById("convSearch")?.value || ""
+        ).toLowerCase();
+        const canal = document.getElementById("canalFilter")?.value || "all";
+        const assunto =
+          document.getElementById("assuntoFilter")?.value || "all";
+        convFiltered = allConvs.filter((c) => {
+          if (convStatusFilter !== "all" && c.st !== convStatusFilter)
+            return false;
+          if (canal !== "all" && c.ch !== canal) return false;
+          if (assunto !== "all" && !c.sub.includes(assunto.split(" ")[0]))
+            return false;
+          if (
+            q &&
+            !c.user.toLowerCase().includes(q) &&
+            !c.sub.toLowerCase().includes(q) &&
+            !c.id.includes(q)
+          )
+            return false;
+          return true;
+        });
+        convCurrentPage = 1;
+        renderConvTable();
+      }
+
+      function renderConvTable() {
+        const tbody = document.getElementById("convTableBody");
+        if (!tbody) return;
+        const start = (convCurrentPage - 1) * CONV_PER_PAGE;
+        const page = convFiltered.slice(start, start + CONV_PER_PAGE);
+
+        tbody.innerHTML = page
+          .map((c, i) => {
+            const s = statusMeta[c.st];
+            const stars = c.csat
+              ? "★".repeat(c.csat) +
+                '<span style="color:var(--border)">★</span>'.repeat(5 - c.csat)
+              : '<span style="color:var(--text-muted)">—</span>';
+            const msgs = c.msgs
+              .map(
+                (m) => `
+      <div class="msg ${m.r === "bot" ? "bot" : "user"}">
+        <div class="msg-avatar">${m.r === "bot" ? "🤖" : c.user[0]}</div>
+        <div>
+          <div class="msg-bubble">${m.m}</div>
+          <div class="msg-time">${m.t}</div>
+        </div>
+      </div>`,
+              )
+              .join("");
+            return `
+      <tr class="conv-row" id="crow-${start + i}">
+        <td>
+          <div class="conv-row-main" onclick="toggleConv(${start + i})">
+            <span class="conv-expand-icon">▶</span>
+            <span class="conv-cell" style="width:60px;color:var(--primary-light);font-weight:600;">${c.id}</span>
+            <span class="conv-cell" style="flex:1;min-width:100px;">${c.user}</span>
+            <span class="conv-cell" style="flex:1.2;min-width:120px;color:var(--text-muted);font-size:11px;">${c.email}</span>
+            <span class="conv-cell" style="flex:1.2;min-width:130px;">${c.sub}</span>
+            <span class="conv-cell" style="width:80px;">${chIco[c.ch] || ""} ${c.ch}</span>
+            <span class="conv-cell" style="width:90px;"><span class="status-pill ${s.cls}">${s.label}</span></span>
+            <span class="conv-cell" style="width:55px;color:var(--text-muted);">${c.dur}</span>
+            <span class="conv-cell" style="width:80px;color:#f59e0b;font-size:12px;">${stars}</span>
+            <span class="conv-cell" style="width:55px;color:var(--text-muted);">${c.h}</span>
+          </div>
+          <div class="conv-history">
+            <div class="history-label">Histórico da conversa</div>
+            <div class="chat-messages">${msgs}</div>
+          </div>
+        </td>
+      </tr>`;
+          })
+          .join("");
+
+        renderPagination();
+      }
+
+      function toggleConv(idx) {
+        const row = document.getElementById("crow-" + idx);
+        if (!row) return;
+        row.classList.toggle("expanded");
+      }
+
+      function renderPagination() {
+        const container = document.getElementById("convPagination");
+        if (!container) return;
+        const total = convFiltered.length;
+        const pages = Math.ceil(total / CONV_PER_PAGE);
+        const start = (convCurrentPage - 1) * CONV_PER_PAGE + 1;
+        const end = Math.min(convCurrentPage * CONV_PER_PAGE, total);
+
+        let btns = `<button class="pag-btn" onclick="goPage(${convCurrentPage - 1})" ${convCurrentPage === 1 ? "disabled" : ""}>‹</button>`;
+        for (let p = 1; p <= pages; p++) {
+          btns += `<button class="pag-btn ${p === convCurrentPage ? "active" : ""}" onclick="goPage(${p})">${p}</button>`;
+        }
+        btns += `<button class="pag-btn" onclick="goPage(${convCurrentPage + 1})" ${convCurrentPage === pages ? "disabled" : ""}>›</button>`;
+
+        container.innerHTML = `
+    <span class="pag-info">Mostrando ${start}–${end} de ${total} conversas</span>
+    <div class="pag-btns">${btns}</div>`;
+      }
+
+      function goPage(p) {
+        const pages = Math.ceil(convFiltered.length / CONV_PER_PAGE);
+        if (p < 1 || p > pages) return;
+        convCurrentPage = p;
+        renderConvTable();
+      }
+
+      // ── TICKETS DATA & LOGIC ─────────────────────────────────────────────────────
+      const assignees = [
+        { name: "Ana P.", color: "#7c6af7" },
+        { name: "Bruno L.", color: "#22d48c" },
+        { name: "Carla M.", color: "#f59e0b" },
+        { name: "Diego S.", color: "#38bdf8" },
+      ];
+      const allTickets = [
+        {
+          id: "#T001",
+          title: "Usuários sem acesso após assinatura",
+          type: "bug",
+          prio: "high",
+          col: "in_progress",
+          convs: 38,
+          date: "20/02",
+          assignee: 0,
+          desc: "Após o pagamento ser confirmado, parte dos usuários não consegue acessar a plataforma por até 48h. O sistema de ativação de conta não está disparando o e-mail de boas-vindas corretamente.",
+          relConvs: [
+            "#4821 – Maria S.",
+            "#4812 – Gustavo N.",
+            "#4805 – Juliana O.",
+          ],
+        },
+        {
+          id: "#T002",
+          title: "PIX não ativa assinatura automaticamente",
+          type: "bug",
+          prio: "high",
+          col: "in_progress",
+          convs: 27,
+          date: "21/02",
+          assignee: 1,
+          desc: "Pagamentos via PIX não estão sendo processados em tempo real pelo sistema de billing. A compensação pode levar até 2h.",
+          relConvs: [
+            "#4820 – João R.",
+            "#4813 – Rafaela P.",
+            "#4804 – Marcos V.",
+          ],
+        },
+        {
+          id: "#T003",
+          title: "Fluxo de reembolso simplificado",
+          type: "improvement",
+          prio: "high",
+          col: "new",
+          convs: 24,
+          date: "22/02",
+          assignee: 2,
+          desc: "Criar um fluxo self-service para reembolso, permitindo que o usuário solicite sem precisar falar com atendimento humano.",
+          relConvs: ["#4819 – Ana C.", "#4811 – Camila W.", "#4803 – Aline C."],
+        },
+        {
+          id: "#T004",
+          title: "Lentidão no dashboard e carregamento de páginas",
+          type: "bug",
+          prio: "medium",
+          col: "analyzing",
+          convs: 21,
+          date: "22/02",
+          assignee: 3,
+          desc: "O dashboard principal apresenta lentidão acima de 8 segundos em horários de pico (9h–11h e 14h–16h). Provável gargalo na query de relatórios.",
+          relConvs: [
+            "#4818 – Pedro L.",
+            "#4810 – Tiago M.",
+            "#4802 – Bruno K.",
+          ],
+        },
+        {
+          id: "#T005",
+          title: "Botão de trocar senha não funciona no Chrome",
+          type: "bug",
+          prio: "medium",
+          col: "analyzing",
+          convs: 18,
+          date: "23/02",
+          assignee: 0,
+          desc: 'O botão "Alterar senha" na página de configurações não dispara a ação em versões recentes do Chrome. Funciona normalmente no Firefox e Safari.',
+          relConvs: ["#4817 – Luana M.", "#4809 – Isabela R."],
+        },
+        {
+          id: "#T006",
+          title: "Recuperação de senha por e-mail aprimorada",
+          type: "improvement",
+          prio: "low",
+          col: "resolved",
+          convs: 15,
+          date: "18/02",
+          assignee: 1,
+          desc: "Melhorar o fluxo de recuperação de senha: adicionar autenticação por SMS como alternativa, aumentar o prazo do link para 24h.",
+          relConvs: ["#4814 – Felipe A.", "#4807 – Fernanda L."],
+        },
+        {
+          id: "#T007",
+          title: "Processo de saque com verificação guiada",
+          type: "improvement",
+          prio: "low",
+          col: "new",
+          convs: 12,
+          date: "24/02",
+          assignee: 2,
+          desc: "Criar um wizard guiado para saques acima de R$300, com verificação de identidade e instrução passo a passo para o usuário.",
+          relConvs: ["#4816 – Carlos F.", "#4808 – Ricardo S."],
+        },
+        {
+          id: "#T008",
+          title: "Solicitação de exclusão de conta self-service",
+          type: "improvement",
+          prio: "low",
+          col: "new",
+          convs: 9,
+          date: "25/02",
+          assignee: 3,
+          desc: "Adicionar opção de exclusão de conta diretamente nas configurações do perfil, com confirmação em dois passos e período de 30 dias para cancelamento.",
+          relConvs: ["#4815 – Beatriz T.", "#4806 – André B."],
+        },
+      ];
+
+      const kanbanCols = [
+        { key: "new", label: "Novo", dot: "#7a8394" },
+        { key: "analyzing", label: "Em Análise", dot: "#38bdf8" },
+        { key: "in_progress", label: "Em Progresso", dot: "#f59e0b" },
+        { key: "resolved", label: "Resolvido", dot: "#22d48c" },
+      ];
+
+      let ticketTypeFilter = "all";
+
+      function setTicketType(btn) {
+        document
+          .querySelectorAll("#ticketTypeTabs .ftab")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        ticketTypeFilter = btn.dataset.type;
+        filterTicketBoard();
+      }
+
+      function filterTicketBoard() {
+        const q = (
+          document.getElementById("ticketSearch")?.value || ""
+        ).toLowerCase();
+        const prio =
+          document.getElementById("ticketPrioFilter")?.value || "all";
+        const filtered = allTickets.filter((t) => {
+          if (ticketTypeFilter !== "all" && t.type !== ticketTypeFilter)
+            return false;
+          if (prio !== "all" && t.prio !== prio) return false;
+          if (q && !t.title.toLowerCase().includes(q) && !t.id.includes(q))
+            return false;
+          return true;
+        });
+        renderKanban(filtered);
+      }
+
+      function renderKanban(list) {
+        list = list || allTickets;
+        const board = document.getElementById("kanbanBoard");
+        if (!board) return;
+
+        board.innerHTML = kanbanCols
+          .map((col) => {
+            const colTickets = list.filter((t) => t.col === col.key);
+            const cards = colTickets
+              .map((t) => {
+                const prioMap = {
+                  high: ["prio-high", "🔴 Alta"],
+                  medium: ["prio-medium", "🟡 Média"],
+                  low: ["prio-low", "🟢 Baixa"],
+                };
+                const [prioCls, prioLabel] = prioMap[t.prio];
+                const tagCls = t.type === "bug" ? "tag-bug" : "tag-feat";
+                const tagLabel = t.type === "bug" ? "🐛 Bug" : "💡 Melhoria";
+                const a = assignees[t.assignee];
+                return `
+        <div class="ticket-card" onclick="openTicketModal('${t.id}')">
+          <div class="tc-top">
+            <span class="tc-id">${t.id}</span>
+            <span class="tc-prio ${prioCls}">${prioLabel}</span>
+          </div>
+          <div class="tc-title">${t.title}</div>
+          <div class="tc-tags">
+            <span class="tc-tag ${tagCls}">${tagLabel}</span>
+          </div>
+          <div class="tc-footer">
+            <span class="tc-convs">💬 ${t.convs} conversas</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="tc-date">${t.date}</span>
+              <div class="tc-assignee" style="background:${a.color}" title="${a.name}">${a.name[0]}</div>
+            </div>
+          </div>
+        </div>`;
+              })
+              .join("");
+
+            return `
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title">
+            <div class="kanban-col-dot" style="background:${col.dot}"></div>
+            ${col.label}
+          </div>
+          <span class="kanban-col-count">${colTickets.length}</span>
+        </div>
+        <div class="kanban-cards">${cards || '<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0;">Nenhum ticket</div>'}</div>
+      </div>`;
+          })
+          .join("");
+      }
+
+      function openTicketModal(id) {
+        const t = allTickets.find((x) => x.id === id);
+        if (!t) return;
+        const prioMap = {
+          high: ["prio-high", "🔴 Alta"],
+          medium: ["prio-medium", "🟡 Média"],
+          low: ["prio-low", "🟢 Baixa"],
+        };
+        const [prioCls, prioLabel] = prioMap[t.prio];
+        const tagCls = t.type === "bug" ? "tag-bug" : "tag-feat";
+        const tagLabel = t.type === "bug" ? "🐛 Bug" : "💡 Melhoria";
+        const colLabel =
+          kanbanCols.find((c) => c.key === t.col)?.label || t.col;
+        const a = assignees[t.assignee];
+
+        document.getElementById("ticketModalContent").innerHTML = `
+    <button class="modal-close" onclick="closeTicketModal()">✕</button>
+    <div class="modal-id">${t.id} · criado em ${t.date}/2026</div>
+    <div class="modal-title">${t.title}</div>
+    <div class="modal-meta">
+      <span class="tc-tag ${tagCls}">${tagLabel}</span>
+      <span class="tc-prio ${prioCls}" style="padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;">${prioLabel}</span>
+      <span class="badge b-neu" style="font-size:11px;">${colLabel}</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);">
+        <div class="tc-assignee" style="background:${a.color};width:20px;height:20px;font-size:9px;">${a.name[0]}</div>${a.name}
+      </span>
+    </div>
+    <div class="modal-section-title">Descrição</div>
+    <div class="modal-desc">${t.desc}</div>
+    <div class="modal-section-title">Conversas relacionadas (${t.relConvs.length})</div>
+    <div class="modal-convs-list">
+      ${t.relConvs.map((c) => `<div class="modal-conv-item">💬 <span style="color:var(--primary-light);font-weight:600;">${c.split("–")[0].trim()}</span><span style="color:var(--text-muted)">– ${c.split("–")[1]?.trim()}</span></div>`).join("")}
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary">Atualizar Status</button>
+      <button class="btn-ghost">Ver Conversas</button>
+      <button class="btn-ghost">Fechar</button>
+    </div>`;
+        document.getElementById("ticketModal").classList.add("open");
+      }
+
+      function closeTicketModal(e) {
+        if (!e || e.target === document.getElementById("ticketModal")) {
+          document.getElementById("ticketModal").classList.remove("open");
+        }
+      }
+
+      // ── USUÁRIOS DATA & LOGIC ─────────────────────────────────────────────────────
+      const userColors = [
+        "#7c6af7",
+        "#22d48c",
+        "#f59e0b",
+        "#38bdf8",
+        "#f43f5e",
+        "#14b8a6",
+        "#a89bf9",
+        "#fb923c",
+      ];
+      const allUsers = [
+        {
+          name: "Maria Santos",
+          email: "maria.s@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "10/01/26",
+          chats: 12,
+          csat: 4.8,
+          last: "hoje",
+        },
+        {
+          name: "João Rodrigues",
+          email: "joao.r@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "15/01/26",
+          chats: 5,
+          csat: 3.2,
+          last: "hoje",
+        },
+        {
+          name: "Ana Costa",
+          email: "ana.c@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "02/11/25",
+          chats: 9,
+          csat: 5.0,
+          last: "ontem",
+        },
+        {
+          name: "Pedro Lima",
+          email: "pedro.l@email.com",
+          plan: "Trial",
+          status: "active",
+          since: "20/02/26",
+          chats: 3,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Luana Moura",
+          email: "luana.m@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "08/12/25",
+          chats: 7,
+          csat: 4.0,
+          last: "23/02",
+        },
+        {
+          name: "Carlos Farias",
+          email: "carlos.f@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "01/02/26",
+          chats: 6,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Beatriz Torres",
+          email: "beatriz.t@email.com",
+          plan: "Pro",
+          status: "inactive",
+          since: "05/10/25",
+          chats: 14,
+          csat: 4.9,
+          last: "10/02",
+        },
+        {
+          name: "Felipe Alves",
+          email: "felipe.a@email.com",
+          plan: "Free",
+          status: "active",
+          since: "18/02/26",
+          chats: 2,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Rafaela Pinto",
+          email: "rafa.p@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "14/12/25",
+          chats: 8,
+          csat: 3.0,
+          last: "24/02",
+        },
+        {
+          name: "Gustavo Neves",
+          email: "gus.n@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "22/09/25",
+          chats: 18,
+          csat: 4.4,
+          last: "ontem",
+        },
+        {
+          name: "Camila Weber",
+          email: "cami.w@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "03/01/26",
+          chats: 11,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Tiago Melo",
+          email: "tiago.m@email.com",
+          plan: "Trial",
+          status: "inactive",
+          since: "10/02/26",
+          chats: 4,
+          csat: 2.0,
+          last: "15/02",
+        },
+        {
+          name: "Isabela Ramos",
+          email: "isa.r@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "29/11/25",
+          chats: 6,
+          csat: 5.0,
+          last: "25/02",
+        },
+        {
+          name: "Ricardo Sousa",
+          email: "ric.s@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "17/08/25",
+          chats: 22,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Fernanda Luz",
+          email: "fer.l@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "12/10/25",
+          chats: 16,
+          csat: 5.0,
+          last: "24/02",
+        },
+        {
+          name: "André Barros",
+          email: "andre.b@email.com",
+          plan: "Free",
+          status: "inactive",
+          since: "01/01/26",
+          chats: 3,
+          csat: 4.0,
+          last: "12/02",
+        },
+        {
+          name: "Juliana Oliveira",
+          email: "ju.o@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "06/02/26",
+          chats: 5,
+          csat: null,
+          last: "hoje",
+        },
+        {
+          name: "Marcos Viana",
+          email: "marcos.v@email.com",
+          plan: "Pro",
+          status: "active",
+          since: "25/07/25",
+          chats: 20,
+          csat: 4.6,
+          last: "25/02",
+        },
+        {
+          name: "Aline Castro",
+          email: "aline.c@email.com",
+          plan: "Basic",
+          status: "active",
+          since: "19/01/26",
+          chats: 7,
+          csat: 3.0,
+          last: "23/02",
+        },
+        {
+          name: "Bruno Kowalski",
+          email: "bruno.k@email.com",
+          plan: "Trial",
+          status: "active",
+          since: "24/02/26",
+          chats: 1,
+          csat: null,
+          last: "hoje",
+        },
+      ];
+
+      let userPage = 1;
+      const USER_PER_PAGE = 10;
+      let userFiltered = [...allUsers];
+
+      function filterUsers() {
+        const q = (
+          document.getElementById("userSearch")?.value || ""
+        ).toLowerCase();
+        const pl = document.getElementById("planFilter")?.value || "all";
+        const st = document.getElementById("userStatusFilter")?.value || "all";
+        userFiltered = allUsers.filter((u) => {
+          if (pl !== "all" && u.plan !== pl) return false;
+          if (st !== "all" && u.status !== st) return false;
+          if (
+            q &&
+            !u.name.toLowerCase().includes(q) &&
+            !u.email.toLowerCase().includes(q)
+          )
+            return false;
+          return true;
+        });
+        userPage = 1;
+        renderUserTable();
+      }
+
+      function renderUserTable() {
+        const tbody = document.getElementById("userTableBody");
+        if (!tbody) return;
+        const start = (userPage - 1) * USER_PER_PAGE;
+        const page = userFiltered.slice(start, start + USER_PER_PAGE);
+        const planClass = {
+          Pro: "plan-pro",
+          Basic: "plan-basic",
+          Trial: "plan-trial",
+          Free: "plan-free",
+        };
+        tbody.innerHTML = page
+          .map((u, i) => {
+            const col = userColors[(start + i) % userColors.length];
+            const initials = u.name
+              .split(" ")
+              .map((w) => w[0])
+              .slice(0, 2)
+              .join("");
+            const dotColor =
+              u.status === "active" ? "var(--success)" : "var(--border)";
+            const stars = u.csat
+              ? `<span style="color:#f59e0b;font-size:11px;">${"★".repeat(Math.round(u.csat))}</span> <span style="color:var(--text-muted);font-size:11px;">${u.csat.toFixed(1)}</span>`
+              : '<span style="color:var(--text-muted)">—</span>';
+            return `<tr>
+      <td style="padding:10px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="user-avatar-lg" style="background:${col}">${initials}</div>
+          <span style="font-weight:500;">${u.name}</span>
+        </div>
+      </td>
+      <td style="color:var(--text-muted);font-size:12px;padding:10px 12px;">${u.email}</td>
+      <td style="padding:10px 12px;"><span class="plan-badge ${planClass[u.plan]}">${u.plan}</span></td>
+      <td style="padding:10px 12px;"><span style="display:flex;align-items:center;font-size:12px;"><span class="user-status-dot" style="background:${dotColor}"></span>${u.status === "active" ? "Ativo" : "Inativo"}</span></td>
+      <td style="color:var(--text-muted);font-size:12px;padding:10px 12px;">${u.since}</td>
+      <td style="font-weight:600;padding:10px 12px;">${u.chats}</td>
+      <td style="padding:10px 12px;">${stars}</td>
+      <td style="color:var(--text-muted);font-size:12px;padding:10px 12px;">${u.last}</td>
+    </tr>`;
+          })
+          .join("");
+
+        // pagination
+        const pag = document.getElementById("userPagination");
+        if (!pag) return;
+        const total = userFiltered.length;
+        const pages = Math.ceil(total / USER_PER_PAGE);
+        const s = (userPage - 1) * USER_PER_PAGE + 1,
+          e = Math.min(userPage * USER_PER_PAGE, total);
+        let btns = `<button class="pag-btn" onclick="goUserPage(${userPage - 1})" ${userPage === 1 ? "disabled" : ""}>‹</button>`;
+        for (let p = 1; p <= pages; p++)
+          btns += `<button class="pag-btn ${p === userPage ? "active" : ""}" onclick="goUserPage(${p})">${p}</button>`;
+        btns += `<button class="pag-btn" onclick="goUserPage(${userPage + 1})" ${userPage === pages ? "disabled" : ""}>›</button>`;
+        pag.innerHTML = `<span class="pag-info">Mostrando ${s}–${e} de ${total} usuários</span><div class="pag-btns">${btns}</div>`;
+      }
+
+      function goUserPage(p) {
+        const pages = Math.ceil(userFiltered.length / USER_PER_PAGE);
+        if (p < 1 || p > pages) return;
+        userPage = p;
+        renderUserTable();
+      }
+
+      // ── RELATÓRIOS DATA & LOGIC ─────────────────────────────────────────────────
+      let relChartDia = null,
+        relChartCsat = null,
+        relChartStatus = null,
+        relChartAssuntos = null;
+      let relDays = 7;
+
+      const relPeriodData = {
+        7: { total: "1.960", res: "76.2%", esc: "11.8%", csat: "4.3" },
+        14: { total: "3.920", res: "75.8%", esc: "12.1%", csat: "4.4" },
+        30: { total: "8.400", res: "76.5%", esc: "11.5%", csat: "4.3" },
+      };
+
+      function genDays(n) {
+        const arr = [];
+        const d = new Date("2026-02-25");
+        for (let i = n - 1; i >= 0; i--) {
+          const x = new Date(d);
+          x.setDate(d.getDate() - i);
+          arr.push(x.getDate() + "/" + (x.getMonth() + 1));
+        }
+        return arr;
+      }
+      function genVol(n, base, spread) {
+        return Array.from({ length: n }, () =>
+          Math.round(base + Math.random() * spread - spread / 2),
+        );
+      }
+
+      function setRelPeriod(btn) {
+        document
+          .querySelectorAll("#relPeriodTabs .ptab")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        relDays = +btn.dataset.days;
+        renderRelatorios();
+      }
+
+      function renderRelatorios() {
+        const d = relPeriodData[relDays];
+        ["relTotalChats", "relResolved", "relEscalated", "relCsat"].forEach(
+          (id, i) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = [d.total, d.res, d.esc, d.csat][i];
+          },
+        );
+
+        const labels = genDays(relDays);
+        const novos = genVol(
+          relDays,
+          relDays === 7 ? 280 : relDays === 14 ? 275 : 270,
+          60,
+        );
+        const resol = novos.map((v) =>
+          Math.round(v * 0.82 + Math.random() * 20 - 10),
+        );
+        const csatSeries = Array.from(
+          { length: relDays },
+          () => +(3.8 + Math.random() * 1.2).toFixed(1),
+        );
+        const gc = "rgba(39,42,54,.8)";
+
+        const destroyAndCreate = (old, id, cfg) => {
+          if (old) old.destroy();
+          return new Chart(document.getElementById(id).getContext("2d"), cfg);
+        };
+
+        // Chats por dia
+        const g1 = document.getElementById("relChartDia")?.getContext("2d");
+        const gA =
+          g1 &&
+          (() => {
+            const g = g1.createLinearGradient(0, 0, 0, 200);
+            g.addColorStop(0, "rgba(124,106,247,.3)");
+            g.addColorStop(1, "rgba(124,106,247,.01)");
+            return g;
+          })();
+        const gB =
+          g1 &&
+          (() => {
+            const g = g1.createLinearGradient(0, 0, 0, 200);
+            g.addColorStop(0, "rgba(34,212,140,.25)");
+            g.addColorStop(1, "rgba(34,212,140,.01)");
+            return g;
+          })();
+        relChartDia = destroyAndCreate(relChartDia, "relChartDia", {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Novos",
+                data: novos,
+                borderColor: "#7c6af7",
+                backgroundColor: gA,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointBackgroundColor: "#7c6af7",
+              },
+              {
+                label: "Resolvidos",
+                data: resol,
+                borderColor: "#22d48c",
+                backgroundColor: gB,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointBackgroundColor: "#22d48c",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false, external: externalTooltipHandler },
+            },
+            scales: {
+              x: { grid: { color: gc } },
+              y: { grid: { color: gc }, beginAtZero: false },
+            },
+          },
+        });
+
+        // CSAT
+        relChartCsat = destroyAndCreate(relChartCsat, "relChartCsat", {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "CSAT",
+                data: csatSeries,
+                borderColor: "#22d48c",
+                backgroundColor: "rgba(34,212,140,.15)",
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointBackgroundColor: "#22d48c",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false, external: externalTooltipHandler },
+            },
+            scales: {
+              x: { grid: { color: gc } },
+              y: { grid: { color: gc }, min: 1, max: 5 },
+            },
+          },
+        });
+
+        // Status donut
+        const totalV = novos.reduce((a, b) => a + b, 0);
+        const escalV = Math.round(totalV * 0.176),
+          pendV = Math.round(totalV * 0.044),
+          resV = totalV - escalV - pendV;
+        relChartStatus = destroyAndCreate(relChartStatus, "relChartStatus", {
+          type: "doughnut",
+          data: {
+            labels: ["Resolvidos", "Escalados", "Pendentes"],
+            datasets: [
+              {
+                data: [resV, escalV, pendV],
+                backgroundColor: ["#22d48c", "#f59e0b", "#f43f5e"],
+                borderWidth: 3,
+                borderColor: "#16181f",
+                hoverOffset: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "68%",
+            plugins: {
+              legend: {
+                display: true,
+                position: "right",
+                labels: { color: "#8892a4", boxWidth: 10, font: { size: 11 } },
+              },
+              tooltip: { enabled: false, external: externalTooltipHandler },
+            },
+          },
+        });
+
+        // Assuntos
+        relChartAssuntos = destroyAndCreate(
+          relChartAssuntos,
+          "relChartAssuntos",
+          {
+            type: "bar",
+            data: {
+              labels: [
+                "Sem acesso",
+                "PIX s/ ativar",
+                "Reembolso",
+                "Site lento",
+                "Trocar senha",
+                "Esq. senha",
+                "Saque",
+                "Del. conta",
+              ],
+              datasets: [
+                {
+                  data: [134, 97, 88, 76, 65, 54, 43, 31].map((v) =>
+                    Math.round(v * (relDays / 7)),
+                  ),
+                  backgroundColor: [
+                    "#f43f5e",
+                    "#f43f5e",
+                    "#f59e0b",
+                    "#f59e0b",
+                    "#38bdf8",
+                    "#38bdf8",
+                    "#22d48c",
+                    "#22d48c",
+                  ],
+                  borderRadius: 4,
+                  borderSkipped: false,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              indexAxis: "y",
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false, external: externalTooltipHandler },
+              },
+              scales: {
+                x: { grid: { color: gc } },
+                y: { grid: { display: false } },
+              },
+            },
+          },
+        );
+
+        // Agents
+        const agents = [
+          {
+            name: "Ana P.",
+            chats: Math.round((68 * relDays) / 7),
+            res: 94,
+            csat: 4.9,
+            col: "#7c6af7",
+          },
+          {
+            name: "Bruno L.",
+            chats: Math.round((54 * relDays) / 7),
+            res: 88,
+            csat: 4.5,
+            col: "#22d48c",
+          },
+          {
+            name: "Carla M.",
+            chats: Math.round((47 * relDays) / 7),
+            res: 91,
+            csat: 4.7,
+            col: "#f59e0b",
+          },
+          {
+            name: "Diego S.",
+            chats: Math.round((45 * relDays) / 7),
+            res: 85,
+            csat: 4.2,
+            col: "#38bdf8",
+          },
+        ];
+        const maxChats = agents[0].chats;
+        document.getElementById("agentTable").innerHTML = agents
+          .map(
+            (a) => `
+    <div class="agent-row">
+      <div class="user-avatar-lg" style="background:${a.col};width:30px;height:30px;font-size:11px;">${a.name[0]}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <span style="font-size:13px;font-weight:500;">${a.name}</span>
+          <span style="font-size:11px;color:var(--text-muted);">${a.chats} chats · ${a.res}% resol. · ⭐${a.csat}</span>
+        </div>
+        <div class="agent-bar-wrap"><div class="agent-bar" style="width:${Math.round((a.chats / maxChats) * 100)}%;background:${a.col};"></div></div>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ── TOAST ────────────────────────────────────────────────────────────────
+      let toastTimer = null;
+      function showToast() {
+        const t = document.getElementById('toastNotif');
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+      }
+      function closeToast() {
+        document.getElementById('toastNotif').classList.remove('show');
+      }
+
+      // ── NOTIFICATIONS ────────────────────────────────────────────────────────
+      let notifCount = 3;
+      function toggleNotif(e) {
+        e.stopPropagation();
+        document.getElementById('notifDropdown').classList.toggle('open');
+      }
+      function readNotif(el) {
+        if (el.classList.contains('read')) return;
+        el.classList.add('read');
+        notifCount = Math.max(0, notifCount - 1);
+        const badge = document.getElementById('notifBadge');
+        badge.textContent = notifCount;
+        if (notifCount === 0) badge.classList.add('gone');
+      }
+      function clearNotifs() {
+        document.querySelectorAll('.notif-item').forEach(el => el.classList.add('read'));
+        notifCount = 0;
+        const badge = document.getElementById('notifBadge');
+        badge.textContent = '0';
+        badge.classList.add('gone');
+        setTimeout(() => document.getElementById('notifDropdown').classList.remove('open'), 300);
+      }
+      document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('notifWrap');
+        if (wrap && !wrap.contains(e.target)) {
+          document.getElementById('notifDropdown').classList.remove('open');
+        }
+      });
+
+      // ── SPLASH ───────────────────────────────────────────────────────────────
+      function dismissSplash() {
+        const splash = document.getElementById('splash-screen');
+        if (!splash) return;
+        splash.classList.add('fade-out');
+        setTimeout(() => splash.remove(), 700);
+      }
+
+      // ── MOBILE NAV ───────────────────────────────────────────────────────────
+      function mobileNavigate(btn) {
+        const targetId = btn.dataset.page;
+        // Switch page
+        document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        // Update mobile nav
+        document.querySelectorAll('.mobile-nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Sync topnav desktop
+        const labels = {
+          'page-dashboard':  'Visão Geral',
+          'page-conversas':  'Conversas',
+          'page-tickets':    'Tickets',
+          'page-usuarios':   'Usuários',
+          'page-relatorios': 'Relatórios',
+        };
+        document.querySelectorAll('.topnav a').forEach(a => {
+          a.classList.toggle('active', a.dataset.label === labels[targetId]);
+        });
+        // Show/hide dashboard filters
+        document.getElementById('topbar-dash-only').style.display =
+          targetId === 'page-dashboard' ? 'flex' : 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // ── LOGOUT ───────────────────────────────────────────────────────────────
+      function doLogout() {
+        const screen = document.getElementById('login-screen');
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPwd').value = '';
+        document.getElementById('loginError').classList.remove('show');
+        screen.classList.remove('hidden');
+      }
+
+      // ── LIVE SIMULATION ──────────────────────────────────────────────────────
+      function liveUpdate() {
+        const updates = [
+          { id: 'dashMetricAct',  min: 6,  max: 14, int: true },
+          { id: 'dashMetricWait', min: 8,  max: 18, int: true },
+        ];
+        updates.forEach(({ id, min, max, int }) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const cur = parseFloat(el.textContent);
+          const delta = (Math.random() - 0.48) * (int ? 2 : 0.1);
+          let next = int ? Math.round(cur + delta) : +(cur + delta).toFixed(1);
+          next = Math.max(min, Math.min(max, next));
+          if (next !== cur) {
+            el.textContent = int ? next : next;
+            const card = el.closest('.card');
+            if (card) {
+              card.classList.remove('kpi-updated');
+              void card.offsetWidth; // reflow to restart animation
+              card.classList.add('kpi-updated');
+            }
+          }
+        });
+      }
+      setInterval(liveUpdate, 8000);
+
+      // ── LOGIN ────────────────────────────────────────────────────────────────
+      function submitLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pwd   = document.getElementById('loginPwd').value;
+        const err   = document.getElementById('loginError');
+        const btn   = document.getElementById('loginBtn');
+
+        err.classList.remove('show');
+
+        if (!email || !pwd) {
+          err.textContent = 'Preencha e-mail e senha para continuar.';
+          err.classList.add('show');
+          return;
+        }
+
+        // Valida credenciais
+        const validEmail = 'contato@bahtech.com.br';
+        const validPwd   = 'bahflash123';
+
+        if (email !== validEmail || pwd !== validPwd) {
+          err.textContent = 'E-mail ou senha incorretos. Tente novamente.';
+          err.classList.add('show');
+          document.getElementById('loginPwd').value = '';
+          document.getElementById('loginPwd').focus();
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Entrando…';
+
+        setTimeout(() => {
+          const screen = document.getElementById('login-screen');
+          screen.classList.add('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Entrar';
+          setTimeout(showToast, 400);
+        }, 900);
+      }
+
+      function togglePwd() {
+        const input = document.getElementById('loginPwd');
+        const icon  = document.getElementById('eyeIcon');
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.innerHTML = show
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+          : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+
+      function handleGoogleLogin() {
+        const btn = document.querySelector('.btn-google');
+        btn.disabled = true;
+        btn.textContent = 'Redirecionando…';
+        setTimeout(() => {
+          document.getElementById('login-screen').classList.add('hidden');
+          btn.disabled = false;
+          btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Entrar com Google`;
+        }, 800);
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        // Play intro video from second 3 and dismiss splash when it ends
+        const splashVideo = document.getElementById('splash-video');
+        if (splashVideo) {
+          splashVideo.addEventListener('ended', dismissSplash);
+          // Wait for video to be ready before seeking and playing
+          splashVideo.addEventListener('canplaythrough', () => {
+            splashVideo.currentTime = 3;
+            splashVideo.play().catch(() => dismissSplash());
+          }, { once: true });
+          // If already ready (cached), trigger manually
+          if (splashVideo.readyState >= 4) {
+            splashVideo.currentTime = 3;
+            splashVideo.play().catch(() => dismissSplash());
+          }
+          // Fallback: dismiss after 15s if video gets stuck
+          setTimeout(dismissSplash, 15000);
+        } else {
+          dismissSplash();
+        }
+
+        updateDashboardCharts('Hoje');
+        renderTickets();
+        renderConversas();
+        renderPeaks();
+        updateCounts();
+        renderConvTable();
+        renderKanban();
+        renderUserTable();
+        renderRelatorios();
+        // ResizeObserver keeps charts synced with flex containers at any viewport
+        const ro = new ResizeObserver(() => {
+          Object.values(Chart.instances).forEach((c) => c.resize());
+        });
+        document
+          .querySelectorAll(".chart-wrap")
+          .forEach((el) => ro.observe(el));
+      });
+    </script>
+
+    <!-- TOAST -->
+    <div class="toast" id="toastNotif">
+      <div class="toast-avatar">PA</div>
+      <div class="toast-body">
+        <div class="toast-title">Bem-vindo de volta, Paulo! 👋</div>
+        <div class="toast-sub">Tudo pronto — 312 atendimentos registrados hoje.</div>
+      </div>
+      <button class="toast-close" onclick="closeToast()">×</button>
+    </div>
+
+  </body>
+</html>
